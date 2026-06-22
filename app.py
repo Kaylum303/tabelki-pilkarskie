@@ -111,7 +111,14 @@ with Mundial:
         st.write("Faule wywalczone", dfd1["Faule wywalczone"].mean())
         st.write("Kartki otrzymane", dfd1["Kartki otrzymane"].mean())
         st.write("Kartki przeciwko", dfd1["Kartki przeciwko"].mean())
-
+        st.write("Auty zdobyte", dfd1["Auty zdobyte"].mean())
+        st.write("Auty przeciwko", dfd1["Auty przeciwko"].mean())
+        st.write("Odbiory wykonane", dfd1["Odbiory wykonane"].mean())
+        st.write("Odbiory przeciwko", dfd1["Odbiory przeciwko"].mean())
+        st.write("Podania wykonane", dfd1["Podania wykonane"].mean())
+        st.write("Podania przeciwnika", dfd1["Podania przeciwnika"].mean())
+        st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean())
+        st.write("Spalone przeciwnika", dfd1["Spalone przeciwnika"].mean())
 
 
 
@@ -129,3 +136,11 @@ with Mundial:
         st.write("Faule wywalczone", dfd2["Faule wywalczone"].mean())
         st.write("Kartki otrzymane", dfd2["Kartki otrzymane"].mean())
         st.write("Kartki przeciwko", dfd2["Kartki przeciwko"].mean())
+        st.write("Auty zdobyte", dfd1["Auty zdobyte"].mean())
+        st.write("Auty przeciwko", dfd1["Auty przeciwko"].mean())
+        st.write("Odbiory wykonane", dfd1["Odbiory wykonane"].mean())
+        st.write("Odbiory przeciwko", dfd1["Odbiory przeciwko"].mean())
+        st.write("Podania wykonane", dfd1["Podania wykonane"].mean())
+        st.write("Podania przeciwnika", dfd1["Podania przeciwnika"].mean())
+        st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean())
+        st.write("Spalone przeciwnika", dfd1["Spalone przeciwnika"].mean())
