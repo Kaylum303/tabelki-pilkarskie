@@ -38,6 +38,14 @@ ogólna = """
     Mecze.rozne_kraj2 AS 'Rożne drużyny 2',
     Mecze.kartki_kraj1 AS 'Kartki drużyny 1',
     Mecze.kartki_kraj2 AS 'Kartki drużyny 2',
+    Mecze.auty_kraj1 AS 'Auty drużyny 1',
+    Mecze.auty_kraj2 AS 'Auty drużyny 2',
+    Mecze.odbiory_kraj1 AS 'Odbiory drużyny 1',
+    Mecze.odbiory_kraj2 AS 'Odbiory drużyny 2',
+    Mecze.spalone_kraj1 AS 'Spalone drużyny 1',
+    Mecze.spalone_kraj2 AS 'Spalone drużyny 2',
+    Mecze.podania_kraj1 AS 'Podania drużyny 1',
+    Mecze.podania_kraj2 AS 'Podania drużyny 2',
     Sędziowie.Nazwa AS Sędzia
     FROM Mecze 	
     LEFT Join Kraje as kraj1 on Mecze.id_kraj1 = kraj1.id_kraj
@@ -47,7 +55,7 @@ ogólna = """
 dfwc = pd.read_sql_query(ogólna, polacz)
 
 sędziowa = """
-        SELECT Sędziowie.Nazwa, sum(faule_kraj1 + faule_kraj2) as Faule, avg(kartki_kraj1 + kartki_kraj2) as Kartki
+        SELECT Sędziowie.Nazwa, avg(faule_kraj1 + faule_kraj2) as Faule, avg(kartki_kraj1 + kartki_kraj2) as Kartki
         from Mecze, Sędziowie
         where Mecze.id_sędzia = Sędziowie.id_sędzia
         group by Nazwa
@@ -56,10 +64,10 @@ sędziowa = """
 dfsedzia = pd.read_sql_query(sędziowa, polacz)
 
 
-df1 = dfwc[['Drużyna 1', 'Gole drużyny 1', 'Gole drużyny 2', 'Strzały drużyny 1', 'Strzały drużyny 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Rożne drużyny 1', 'Rożne drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2']].copy()
-df2 = dfwc[['Drużyna 2', 'Gole drużyny 2', 'Gole drużyny 1', 'Strzały drużyny 2', 'Strzały drużyny 1', 'Faule drużyny 2', 'Faule drużyny 1', 'Rożne drużyny 2', 'Rożne drużyny 1', 'Kartki drużyny 2', 'Kartki drużyny 1']].copy()
-df1.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko']
-df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko']
+df1 = dfwc[['Drużyna 1', 'Gole drużyny 1', 'Gole drużyny 2', 'Strzały drużyny 1', 'Strzały drużyny 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Rożne drużyny 1', 'Rożne drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2', 'Auty drużyny 1', 'Auty drużyny 2', 'Odbiory drużyny 1', 'Odbiory drużyny 2', 'Podania drużyny 1', 'Podania drużyny 2', 'Spalone drużyny 1', 'Spalone drużyny 2']].copy()
+df2 = dfwc[['Drużyna 2', 'Gole drużyny 2', 'Gole drużyny 1', 'Strzały drużyny 2', 'Strzały drużyny 1', 'Faule drużyny 2', 'Faule drużyny 1', 'Rożne drużyny 2', 'Rożne drużyny 1', 'Kartki drużyny 2', 'Kartki drużyny 1', 'Auty drużyny 2', 'Auty drużyny 1', 'Odbiory drużyny 2', 'Odbiory drużyny 1', 'Podania drużyny 2', 'Podania drużyny 1', 'Spalone drużyny 2', 'Spalone drużyny 1']].copy()
+df1.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
+df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
 dfciek = pd.concat([df1, df2], ignore_index=True)
 dfsrednie = dfciek.groupby('Drużyna').mean().reset_index()
 
