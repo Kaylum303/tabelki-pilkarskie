@@ -45,8 +45,9 @@ ogólna = """
     LEFT Join Sędziowie on Mecze.id_sędzia = Sędziowie.id_sędzia;
     """
 dfwc = pd.read_sql_query(ogólna, polacz)
+
 sędziowa = """
-        SELECT Sędziowie.Nazwa, sum(faule_kraj1 + faule_kraj2) as faule
+        SELECT Sędziowie.Nazwa, sum(faule_kraj1 + faule_kraj2) as Faule, avg(kartki_kraj1 + kartki_kraj2) as Kartki
         from Mecze, Sędziowie
         where Mecze.id_sędzia = Sędziowie.id_sędzia
         group by Nazwa
@@ -120,32 +121,3 @@ with Mundial:
         st.write("Faule wywalczone", dfd2["Faule wywalczone"].mean())
         st.write("Kartki otrzymane", dfd2["Kartki otrzymane"].mean())
         st.write("Kartki przeciwko", dfd2["Kartki przeciwko"].mean())
-
-
-
-#st.subheader("Stastyki z całego sezonu")
-#st.write("Średnie faule popełnione", round(df["FC"].mean(),2))
-#st.write("Średnie faule wywalczone", round(df["FW"].mean(),2))
-#st.write("Średnie faule meczowe", round(df["FM"].mean(),2))
-
-#st.subheader("Ostatnie mecze")
-#datar=df.iloc[::-1]
-#liczba = st.slider("Liczba ostatnich meczy", min_value=1, max_value=17)
-#ost=datar.head(liczba)
-#st.dataframe(ost, hide_index=True)
-#st.write("Średnie faule popełnione dla wybranych ostatnich meczy:", round(ost["FC"].mean(),2))
-#st.write("Średnie faule popełnione dla wybranych ostatnich meczy:", round(ost["FW"].mean(),2))
-#st.write("Średnie faule popełnione dla wybranych ostatnich meczy:", round(ost["FM"].mean(),2))
-
-#st.subheader("Podana minimalna liczba fauli")
-#war = st.text_input("Wpisz min liczbę fauli", value=0)
-#minw = df[df["FC"] > int(war)]
-#st.dataframe(minw, hide_index=True)
-#st.write("Liczba meczy z wybranym warunkiem:", len(minw.index) ,'/', len(df.index))
-
-
-
-#with st.sidebar:
-#    st.header("Faule")
-#    st.header("Strzały")
-#    st.header("Rzuty rożne")
