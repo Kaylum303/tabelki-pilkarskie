@@ -69,7 +69,7 @@ df2 = dfwc[['Drużyna 2', 'Gole drużyny 2', 'Gole drużyny 1', 'Strzały druży
 df1.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
 df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
 dfciek = pd.concat([df1, df2], ignore_index=True)
-dfsrednie = dfciek.groupby('Drużyna').mean().reset_index()
+dfsrednie = dfciek.groupby('Drużyna').mean().round(2).reset_index()
 
 Mundial, Ekstraklasa = st.tabs(["Mistrzostwa Świata 2026", "Ekstraklasa 25/26"])
 
@@ -84,41 +84,39 @@ with Mundial:
     st.subheader("Tabela ogólna statystyk drużyn", text_alignment='center')
     st.dataframe(dfsrednie, hide_index=True)
 
-    p1, p2, p3 = st.columns([1,1,1])
+    st.subheader("Tabela ogólna sędziów", text_alignment='center')
+    p1, p2 = st.columns([1,1])
+    ls = pd.unique(dfwc['Sędzia'])
+    lss = np.sort(ls)
 
+    with p1:
+        st.dataframe(dfsedzia, hide_index=True, use_container_width=True)
 
     with p2:
-        st.subheader("Tabela ogólna sędziów", text_alignment='center')
-        st.dataframe(dfsedzia, hide_index=True, use_container_width=True)
+        sw = st.selectbox("Mecze sędziego ", lss)
+        st.dataframe(dfwc[(dfwc['Sędzia'] == sw)], hide_index=True, column_order=['Drużyna 1','Drużyna 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2'])
+
+
 
     st.subheader("Porównywarka drużyn", text_alignment='center')
     lk = pd.unique(dfciek['Drużyna'])
     lks = np.sort(lk)
 
 
-
-    pl, kol1 , kol2, pp = st.columns([1,2,2,1])
+    pl, kol1, kol2, pp = st.columns([1,2,2,1])
     with kol1:
         d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lks)
         st.dataframe(dfwc[(dfwc['Drużyna 1'] == d1) | (dfwc['Drużyna 2'] == d1)], hide_index=True)
         dfd1 = dfciek[dfciek['Drużyna'] == d1]
         st.write("Statystyki ", d1)
-        st.write("Gole strzelone", dfd1["Gole strzelone"].mean())
-        st.write("Gole stracone", dfd1["Gole stracone"].mean())
-        st.write("Strzały wykonane", dfd1["Strzały wykonane"].mean())
-        st.write("Strzały przeciwko", dfd1["Strzały przeciwko"].mean())
-        st.write("Faule popełnione", dfd1["Faule popełnione"].mean())
-        st.write("Faule wywalczone", dfd1["Faule wywalczone"].mean())
-        st.write("Kartki otrzymane", dfd1["Kartki otrzymane"].mean())
-        st.write("Kartki przeciwko", dfd1["Kartki przeciwko"].mean())
-        st.write("Auty zdobyte", dfd1["Auty zdobyte"].mean())
-        st.write("Auty przeciwko", dfd1["Auty przeciwko"].mean())
-        st.write("Odbiory wykonane", dfd1["Odbiory wykonane"].mean())
-        st.write("Odbiory przeciwko", dfd1["Odbiory przeciwko"].mean())
-        st.write("Podania wykonane", dfd1["Podania wykonane"].mean())
-        st.write("Podania przeciwnika", dfd1["Podania przeciwnika"].mean())
-        st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean())
-        st.write("Spalone przeciwnika", dfd1["Spalone przeciwnika"].mean())
+        st.write("Gole strzelone", dfd1["Gole strzelone"].mean().round(2),"Gole stracone", dfd1["Gole stracone"].mean().round(2))
+        st.write("Strzały wykonane", dfd1["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd1["Strzały przeciwko"].mean().round(2))
+        st.write("Faule popełnione", dfd1["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd1["Faule wywalczone"].mean().round(2))
+        st.write("Kartki otrzymane", dfd1["Kartki otrzymane"].mean().round(2), "Kartki przeciwko", dfd1["Kartki przeciwko"].mean().round(2))
+        st.write("Auty zdobyte", dfd1["Auty zdobyte"].mean().round(2), "Auty przeciwko", dfd1["Auty przeciwko"].mean().round(2))
+        st.write("Odbiory wykonane", dfd1["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko", dfd1["Odbiory przeciwko"].mean().round(2))
+        st.write("Podania wykonane", dfd1["Podania wykonane"].mean().round(2), "Podania przeciwnika", dfd1["Podania przeciwnika"].mean().round(2))
+        st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd1["Spalone przeciwnika"].mean().round(2))
 
 
 
@@ -128,19 +126,11 @@ with Mundial:
         st.dataframe(dfwc[(dfwc['Drużyna 1'] == d2) | (dfwc['Drużyna 2'] == d2)], hide_index=True)
         dfd2 = dfciek[dfciek['Drużyna'] == d2]
         st.write("Statystyki ", d2)
-        st.write("Gole strzelone", dfd2["Gole strzelone"].mean())
-        st.write("Gole stracone", dfd2["Gole stracone"].mean())
-        st.write("Strzały wykonane", dfd2["Strzały wykonane"].mean())
-        st.write("Strzały przeciwko", dfd2["Strzały przeciwko"].mean())
-        st.write("Faule popełnione", dfd2["Faule popełnione"].mean())
-        st.write("Faule wywalczone", dfd2["Faule wywalczone"].mean())
-        st.write("Kartki otrzymane", dfd2["Kartki otrzymane"].mean())
-        st.write("Kartki przeciwko", dfd2["Kartki przeciwko"].mean())
-        st.write("Auty zdobyte", dfd2["Auty zdobyte"].mean())
-        st.write("Auty przeciwko", dfd2["Auty przeciwko"].mean())
-        st.write("Odbiory wykonane", dfd2["Odbiory wykonane"].mean())
-        st.write("Odbiory przeciwko", dfd2["Odbiory przeciwko"].mean())
-        st.write("Podania wykonane", dfd2["Podania wykonane"].mean())
-        st.write("Podania przeciwnika", dfd2["Podania przeciwnika"].mean())
-        st.write("Spalone zrobione", dfd2["Spalone zrobione"].mean())
-        st.write("Spalone przeciwnika", dfd2["Spalone przeciwnika"].mean())
+        st.write("Gole strzelone", dfd2["Gole strzelone"].mean().round(2), "Gole stracone", dfd2["Gole stracone"].mean().round(2))
+        st.write("Strzały wykonane", dfd2["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd2["Strzały przeciwko"].mean().round(2))
+        st.write("Faule popełnione", dfd2["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd2["Faule wywalczone"].mean().round(2))
+        st.write("Kartki otrzymane", dfd2["Kartki otrzymane"].mean().round(2), "Kartki przeciwko", dfd2["Kartki przeciwko"].mean().round(2))
+        st.write("Auty zdobyte", dfd2["Auty zdobyte"].mean().round(2), "Auty przeciwko", dfd2["Auty przeciwko"].mean().round(2))
+        st.write("Odbiory wykonane", dfd2["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko", dfd2["Odbiory przeciwko"].mean().round(2))
+        st.write("Podania wykonane", dfd2["Podania wykonane"].mean().round(2), "Podania przeciwnika", dfd2["Podania przeciwnika"].mean().round(2))
+        st.write("Spalone zrobione", dfd2["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd2["Spalone przeciwnika"].mean().round(2))
