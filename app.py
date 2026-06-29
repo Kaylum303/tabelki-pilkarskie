@@ -81,20 +81,24 @@ with Ekstraklasa:
     st.dataframe(dfmecz_wk, hide_index=True)
 
 with Mundial:
-    st.subheader("Tabela ogólna statystyk drużyn", text_alignment='center')
+    st.subheader("Tabela drużyn z ich statystykami średnio co mecz", text_alignment='center')
     st.dataframe(dfsrednie, hide_index=True)
 
-    st.subheader("Tabela ogólna sędziów", text_alignment='center')
+    st.subheader("Tabela statystyk sędziów", text_alignment='center')
     p1, p2 = st.columns([1,1])
     ls = pd.unique(dfwc['Sędzia'])
     lss = np.sort(ls)
 
     with p1:
+        st.write("Tabela sędziów z ich faulami i kartkami średnio co mecz")
         st.dataframe(dfsedzia, hide_index=True, use_container_width=True)
 
     with p2:
         sw = st.selectbox("Mecze sędziego ", lss)
         st.dataframe(dfwc[(dfwc['Sędzia'] == sw)], hide_index=True, column_order=['Drużyna 1','Drużyna 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2'])
+        dfs = dfsedzia[dfsedzia["Nazwa"] == sw]
+        st.write("Średnia odwgizdanych fauli: ", dfs["Faule"].mean())
+        st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
 
 
 
