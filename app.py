@@ -83,6 +83,7 @@ with Ekstraklasa:
 with Mundial:
     st.subheader("Tabela drużyn z ich statystykami średnio co mecz", text_alignment='center')
     st.dataframe(dfsrednie, hide_index=True)
+    st.info("Statystyki obejmują wyłącznie regulaminowy czas gry, bez dogrywki", icon="❕", width=515 )
 
     st.subheader("Tabela statystyk sędziów", text_alignment='center')
     p1, p2 = st.columns([1,1])
@@ -105,12 +106,15 @@ with Mundial:
     st.subheader("Porównywarka drużyn", text_alignment='center')
     lk = pd.unique(dfciek['Drużyna'])
     lks = np.sort(lk)
-
+    p1,p2,p3 = st.columns([1,1,1])
+    k = dfwc.columns.tolist()
+    with p2:
+        wk = st.multiselect("Kolumny do filtru", options=k, default=['Drużyna 1', 'Drużyna 2'])
 
     pl, kol1, kol2, pp = st.columns([1,2,2,1])
     with kol1:
         d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lks)
-        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d1) | (dfwc['Drużyna 2'] == d1)], hide_index=True)
+        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d1) | (dfwc['Drużyna 2'] == d1)], column_order=wk, hide_index=True)
         dfd1 = dfciek[dfciek['Drużyna'] == d1]
         st.write("Statystyki ", d1)
         st.write("Gole strzelone", dfd1["Gole strzelone"].mean().round(2),"Gole stracone", dfd1["Gole stracone"].mean().round(2))
@@ -128,7 +132,7 @@ with Mundial:
 
     with kol2:
         d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lks)
-        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d2) | (dfwc['Drużyna 2'] == d2)], hide_index=True)
+        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d2) | (dfwc['Drużyna 2'] == d2)], column_order=wk, hide_index=True)
         dfd2 = dfciek[dfciek['Drużyna'] == d2]
         st.write("Statystyki ", d2)
         st.write("Gole strzelone", dfd2["Gole strzelone"].mean().round(2), "Gole stracone", dfd2["Gole stracone"].mean().round(2))
