@@ -104,18 +104,34 @@ with Mundial:
 
 
     st.subheader("Porównywarka drużyn", text_alignment='center')
-    lk = pd.unique(dfciek['Drużyna'])
-    lks = np.sort(lk)
-    p1,p2,p3 = st.columns([1,1,1])
-    k = dfwc.columns.tolist()
-    with p2:
-        wk = st.multiselect("Kolumny do filtru", options=k, default=['Drużyna 1', 'Drużyna 2'])
+    Mapping = {
+        "Gole": ["Gole drużyny 1", "Gole drużyny 2"],
+        "Strzały": ["Strzały drużyny 1", "Strzały drużyny 2"],
+        "Faule": ["Faule drużyny 1", "Faule drużyny 2"],
+        "Rzuty rożne": ["Rożne drużyny 1", "Rożne drużyny 2"],
+        "Kartki": ["Kartki drużyny 1", "Kartki drużyny 2"],
+        "Auty": ["Auty drużyny 1", "Auty drużyny 2"],
+        "Odbiory": ["Odbiory drużyny 1", "Odbiory drużyny 2"],
+        "Spalone": ["Spalone drużyny 1", "Spalone drużyny 2"],
+        "Podania": ["Podania drużyny 1", "Podania drużyny 2"]
+    }
 
+    lk = np.sort(pd.unique(dfciek['Drużyna']))
+    p1,p2,p3 = st.columns([1,1,1])
+    kategorie = dfwc.columns.tolist()
+    with p2:
+        kategoriewybrane = st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki", options=list(Mapping.keys()))
+        kolumnywybrane = ["Drużyna 1", "Drużyna 2"]
+        for kategorie in kategoriewybrane:
+            kolumnywybrane.extend(Mapping[kategorie])
+
+            
     pl, kol1, kol2, pp = st.columns([1,2,2,1])
     with kol1:
-        d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lks)
-        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d1) | (dfwc['Drużyna 2'] == d1)], column_order=wk, hide_index=True)
+        d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lk)
+        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d1) | (dfwc['Drużyna 2'] == d1)], column_order=kolumnywybrane, hide_index=True)
         dfd1 = dfciek[dfciek['Drużyna'] == d1]
+
         st.write("Statystyki ", d1)
         st.write("Gole strzelone", dfd1["Gole strzelone"].mean().round(2),"Gole stracone", dfd1["Gole stracone"].mean().round(2))
         st.write("Strzały wykonane", dfd1["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd1["Strzały przeciwko"].mean().round(2))
@@ -131,8 +147,8 @@ with Mundial:
 
 
     with kol2:
-        d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lks)
-        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d2) | (dfwc['Drużyna 2'] == d2)], column_order=wk, hide_index=True)
+        d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lk)
+        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d2) | (dfwc['Drużyna 2'] == d2)], column_order=kolumnywybrane, hide_index=True)
         dfd2 = dfciek[dfciek['Drużyna'] == d2]
         st.write("Statystyki ", d2)
         st.write("Gole strzelone", dfd2["Gole strzelone"].mean().round(2), "Gole stracone", dfd2["Gole stracone"].mean().round(2))
