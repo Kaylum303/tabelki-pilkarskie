@@ -61,7 +61,7 @@ sędziowa = """
         group by Nazwa
         order by faule desc
         """
-dfsedzia = pd.read_sql_query(sędziowa, polacz)
+dfsedzia = pd.read_sql_query(sędziowa, polacz).round(2)
 
 
 df1 = dfwc[['Drużyna 1', 'Gole drużyny 1', 'Gole drużyny 2', 'Strzały drużyny 1', 'Strzały drużyny 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Rożne drużyny 1', 'Rożne drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2', 'Auty drużyny 1', 'Auty drużyny 2', 'Odbiory drużyny 1', 'Odbiory drużyny 2', 'Podania drużyny 1', 'Podania drużyny 2', 'Spalone drużyny 1', 'Spalone drużyny 2']].copy()
@@ -73,12 +73,6 @@ dfsrednie = dfciek.groupby('Drużyna').mean().round(2).reset_index()
 
 Mundial, Ekstraklasa = st.tabs(["Mistrzostwa Świata 2026", "Ekstraklasa 25/26"])
 
-with Ekstraklasa:
-    st.subheader("Wszystkie mecze")
-    lista_kluby = dfekstra["Gospodarz"].unique()
-    Klub = st.selectbox("Wybierz drużynę gopsodarzy",  lista_kluby)
-    dfmecz_wk = dfekstra[dfekstra['Gospodarz'] == Klub]
-    st.dataframe(dfmecz_wk, hide_index=True)
 
 with Mundial:
     st.subheader("Tabela drużyn z ich statystykami średnio co mecz", text_alignment='center')
@@ -87,21 +81,50 @@ with Mundial:
 
     st.subheader("Tabela statystyk sędziów", text_alignment='center')
     p1, p2 = st.columns([1,1])
-    ls = pd.unique(dfwc['Sędzia'])
-    lss = np.sort(ls)
+    ls = np.sort(pd.unique(dfwc['Sędzia']))
 
     with p1:
         st.write("Tabela sędziów z ich faulami i kartkami średnio co mecz")
-        st.dataframe(dfsedzia, hide_index=True, use_container_width=True)
+        st.dataframe(dfsedzia, hide_index=True, width='stretch')
 
     with p2:
-        sw = st.selectbox("Mecze sędziego ", lss)
+        sw = st.selectbox("Mecze sędziego ", ls)
         st.dataframe(dfwc[(dfwc['Sędzia'] == sw)], hide_index=True, column_order=['Drużyna 1','Drużyna 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2'])
         dfs = dfsedzia[dfsedzia["Nazwa"] == sw]
         st.write("Średnia odwgizdanych fauli: ", dfs["Faule"].mean())
         st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
 
+    Nadchodzi = [
+        ("Brazylia", "Norwegia"),
+        ("Meksyk", "Anglia"),
+        ("Portugalia", "Hiszpania"),
+        ("Stany Zjednoczone", "Belgia"),
+        ("Argentyna", "Egipt"),
+        ("Szwajcaria", "Kolumbia")
+    ]
 
+    if "g_d1" not in st.session_state:
+        st.session_state.g_d1 = Nadchodzi[0][0]
+
+    if "g_d2" not in st.session_state:
+        st.session_state.g_d2 = Nadchodzi[0][1]
+
+    st.subheader("Nadchodzące mecze 1/8 fazy pucharowej", text_alignment='center')
+
+    for gosp, gosc in Nadchodzi:
+        with st.container(border=True):
+            k1, k2, k3, k4 = st.columns([2,1,1,1])
+            with k1:
+                st.markdown(f"<h5 style='text-align: right;'>{gosp}</h5>", unsafe_allow_html=True)
+            with k2:
+                st.markdown("<h5 style='text-align: center; color: gray;'>VS</h5>", unsafe_allow_html=True)
+            with k3:
+                st.markdown(f"<h5 style='text-align: left;'>{gosc}</h5>", unsafe_allow_html=True)
+            with k4:
+                if st.button("Porównaj drużyny", key=f"btn_{gosp}_{gosc}", use_container_width=True):
+                    st.session_state.g_d1 = gosp
+                    st.session_state.g_d2 = gosc
+                    st.rerun()
 
     st.subheader("Porównywarka drużyn", text_alignment='center')
     Mapping = {
@@ -117,22 +140,32 @@ with Mundial:
     }
 
     lk = np.sort(pd.unique(dfciek['Drużyna']))
-    p1,p2,p3 = st.columns([1,1,1])
+    p1, p2, p3 = st.columns([1, 1, 1])
     kategorie = dfwc.columns.tolist()
     with p2:
-        kategoriewybrane = st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki", options=list(Mapping.keys()))
+        kategoriewybrane = st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki",options=list(Mapping.keys()))
         kolumnywybrane = ["Drużyna 1", "Drużyna 2"]
         for kategorie in kategoriewybrane:
             kolumnywybrane.extend(Mapping[kategorie])
 
-            
+    kl = [
+        'Drużyna 1', 'Gole drużyny 1', 'Strzały drużyny 1', 'Faule drużyny 1', 'Rożne drużyny 1', 'Kartki drużyny 1', 'Auty drużyny 1', 'Odbiory drużyny 1', 'Spalone drużyny 1', 'Podania drużyny 1',
+    ]
+
+    kp = [
+        'Drużyna 2', 'Gole drużyny 2', 'Strzały drużyny 2', 'Faule drużyny 2', 'Rożne drużyny 2', 'Kartki drużyny 2', 'Auty drużyny 2', 'Odbiory drużyny 2', 'Spalone drużyny 2', 'Podania drużyny 2',
+    ]
+
+    dfm = dfwc.copy()
     pl, kol1, kol2, pp = st.columns([1,2,2,1])
     with kol1:
-        d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lk)
-        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d1) | (dfwc['Drużyna 2'] == d1)], column_order=kolumnywybrane, hide_index=True)
+        d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lk, key="g_d1")
+        m = (dfm['Drużyna 2'] == d1)
+        dfm.loc[m, kl + kp] = dfm.loc[m, kp + kl].values
+        st.dataframe(dfm[dfm['Drużyna 1'] == d1], column_order=kolumnywybrane, hide_index=True)
         dfd1 = dfciek[dfciek['Drużyna'] == d1]
 
-        st.write("Statystyki ", d1)
+        st.write("Statystyki: ", d1)
         st.write("Gole strzelone", dfd1["Gole strzelone"].mean().round(2),"Gole stracone", dfd1["Gole stracone"].mean().round(2))
         st.write("Strzały wykonane", dfd1["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd1["Strzały przeciwko"].mean().round(2))
         st.write("Faule popełnione", dfd1["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd1["Faule wywalczone"].mean().round(2))
@@ -143,14 +176,14 @@ with Mundial:
         st.write("Podania wykonane", dfd1["Podania wykonane"].mean().round(2), "Podania przeciwnika", dfd1["Podania przeciwnika"].mean().round(2))
         st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd1["Spalone przeciwnika"].mean().round(2))
 
-
-
-
     with kol2:
-        d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lk)
-        st.dataframe(dfwc[(dfwc['Drużyna 1'] == d2) | (dfwc['Drużyna 2'] == d2)], column_order=kolumnywybrane, hide_index=True)
+        d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lk, key="g_d2")
+        m = (dfm['Drużyna 2'] == d2)
+        dfm.loc[m, kl + kp] = dfm.loc[m, kp + kl].values
+        st.dataframe(dfm[dfm['Drużyna 1'] == d2], column_order=kolumnywybrane, hide_index=True)
         dfd2 = dfciek[dfciek['Drużyna'] == d2]
-        st.write("Statystyki ", d2)
+
+        st.write("Statystyki: ", d2)
         st.write("Gole strzelone", dfd2["Gole strzelone"].mean().round(2), "Gole stracone", dfd2["Gole stracone"].mean().round(2))
         st.write("Strzały wykonane", dfd2["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd2["Strzały przeciwko"].mean().round(2))
         st.write("Faule popełnione", dfd2["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd2["Faule wywalczone"].mean().round(2))
@@ -160,3 +193,16 @@ with Mundial:
         st.write("Odbiory wykonane", dfd2["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko", dfd2["Odbiory przeciwko"].mean().round(2))
         st.write("Podania wykonane", dfd2["Podania wykonane"].mean().round(2), "Podania przeciwnika", dfd2["Podania przeciwnika"].mean().round(2))
         st.write("Spalone zrobione", dfd2["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd2["Spalone przeciwnika"].mean().round(2))
+
+
+
+
+
+
+
+    with Ekstraklasa:
+        st.subheader("Wszystkie mecze")
+        lista_kluby = dfekstra["Gospodarz"].unique()
+        Klub = st.selectbox("Wybierz drużynę gopsodarzy", lista_kluby)
+        dfmecz_wk = dfekstra[dfekstra['Gospodarz'] == Klub]
+        st.dataframe(dfmecz_wk, hide_index=True)
