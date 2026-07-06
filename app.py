@@ -95,13 +95,14 @@ with Mundial:
         st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
 
     Nadchodzi = [
-        ("Brazylia", "Norwegia"),
-        ("Meksyk", "Anglia"),
         ("Portugalia", "Hiszpania"),
         ("Stany Zjednoczone", "Belgia"),
         ("Argentyna", "Egipt"),
         ("Szwajcaria", "Kolumbia")
     ]
+
+    if "filtry" not in st.session_state:
+        st.session_state.filtry = []
 
     if "g_d1" not in st.session_state:
         st.session_state.g_d1 = Nadchodzi[0][0]
@@ -126,6 +127,7 @@ with Mundial:
                     st.session_state.g_d2 = gosc
                     st.rerun()
 
+
     st.subheader("Porównywarka drużyn", text_alignment='center')
     Mapping = {
         "Gole": ["Gole drużyny 1", "Gole drużyny 2"],
@@ -143,9 +145,9 @@ with Mundial:
     p1, p2, p3 = st.columns([1, 1, 1])
     kategorie = dfwc.columns.tolist()
     with p2:
-        kategoriewybrane = st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki",options=list(Mapping.keys()))
+        st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki",options=list(Mapping.keys()), key="filtry")
         kolumnywybrane = ["Drużyna 1", "Drużyna 2"]
-        for kategorie in kategoriewybrane:
+        for kategorie in st.session_state.filtry:
             kolumnywybrane.extend(Mapping[kategorie])
 
     kl = [
