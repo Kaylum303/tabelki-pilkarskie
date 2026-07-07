@@ -95,10 +95,10 @@ with Mundial:
         st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
 
     Nadchodzi = [
-        ("Portugalia", "Hiszpania"),
-        ("Stany Zjednoczone", "Belgia"),
-        ("Argentyna", "Egipt"),
-        ("Szwajcaria", "Kolumbia")
+        ("Francja", "Maroko"),
+        ("Hiszpania", "Belgia"),
+        ("Norwegia", "Anglia"),
+        ("Argentyna", "Szwajcaria")
     ]
 
     if "filtry" not in st.session_state:
@@ -110,7 +110,7 @@ with Mundial:
     if "g_d2" not in st.session_state:
         st.session_state.g_d2 = Nadchodzi[0][1]
 
-    st.subheader("Nadchodzące mecze 1/8 fazy pucharowej", text_alignment='center')
+    st.subheader("Nadchodzące mecze ćwierćfinałowe", text_alignment='center')
 
     for gosp, gosc in Nadchodzi:
         with st.container(border=True):
