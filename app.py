@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib
 import sqlite3
 
 st.title("Statystyki piłkarskie")
@@ -95,10 +96,8 @@ with Mundial:
         st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
 
     Nadchodzi = [
-        ("Francja", "Maroko"),
-        ("Hiszpania", "Belgia"),
-        ("Norwegia", "Anglia"),
-        ("Argentyna", "Szwajcaria")
+        ("Francja", "Hiszpania"),
+        ("Anglia", "Argentyna"),
     ]
 
     if "filtry" not in st.session_state:
@@ -110,7 +109,7 @@ with Mundial:
     if "g_d2" not in st.session_state:
         st.session_state.g_d2 = Nadchodzi[0][1]
 
-    st.subheader("Nadchodzące mecze ćwierćfinałowe", text_alignment='center')
+    st.subheader("Nadchodzące mecze półfinałowe", text_alignment='center')
 
     for gosp, gosc in Nadchodzi:
         with st.container(border=True):
@@ -203,8 +202,38 @@ with Mundial:
 
 
     with Ekstraklasa:
-        st.subheader("Wszystkie mecze")
+        st.subheader("Wszystkie mecze ekstraklasy wybranej drużyny")
         lista_kluby = dfekstra["Gospodarz"].unique()
-        Klub = st.selectbox("Wybierz drużynę gopsodarzy", lista_kluby)
-        dfmecz_wk = dfekstra[dfekstra['Gospodarz'] == Klub]
-        st.dataframe(dfmecz_wk, hide_index=True)
+        Klub = st.selectbox("Wybierz drużynę", lista_kluby)
+
+        dfekstra_gospo = dfekstra[dfekstra['Gospodarz'] == Klub]
+        dfekstra_gosc = dfekstra[dfekstra['Gosc'] == Klub]
+
+        f1 = dfekstra_gospo["Faule Gospo"].mean()
+        f2 = dfekstra_gosc["Faule Gosc"].mean()
+        f3 = dfekstra_gospo["Faule Gosc"].mean()
+        f4 = dfekstra_gosc["Faule Gospo"].mean()
+
+        g1, g2, g3 = st.columns(3)
+        with g1:
+            st.subheader("Popełnianie fauli")
+            st.write(f"{Klub} jako gospodarz", f1.round(2))
+            st.write(f"{Klub} jako gość", f2.round(2))
+            st.write("Średnio popełniane", ((f1 + f2) / 2).round(2))
+
+        with g2:
+            st.subheader("Wywalczanie fauli")
+            st.write(f"{Klub} jako gospodarz", f3.round(2))
+            st.write(f"{Klub} jako gość", f4.round(2))
+            st.write("Średnio wywalczane", ((f3+f4)/2).round(2))
+        with g3:
+            st.subheader("Meczowe faule")
+            st.write("Faule meczowe jako gospodarz", (f1 + f3).round(2))
+            st.write("Faule meczowe jako gość", (f2 + f4).round(2))
+            st.write("Średnie meczowe", ((f1+f3+f2+f4)/2).round(2))
+
+        st.subheader(f"{Klub} jako gospodarz")
+        st.dataframe(dfekstra_gospo, hide_index=True)
+        st.subheader(f"{Klub} jako gość")
+        st.dataframe(dfekstra_gosc, hide_index=True)
+
