@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib
 import sqlite3
 
 st.title("Statystyki piłkarskie")
