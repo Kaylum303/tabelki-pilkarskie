@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 import sqlite3
+
 
 st.title("Statystyki piłkarskie")
 st.set_page_config(layout="wide")
@@ -12,8 +14,8 @@ mecze = """
     Mecze.kolejka,
     gospodarze.Nazwa AS Gospodarz,
     goscie.Nazwa AS Gosc,
-    Mecze.stat_gospo AS 'Faule Gospo',
-    Mecze.stat_gosc AS 'Faule Gosc',
+    Mecze.stat_gospo AS 'Faule gospodarz',
+    Mecze.stat_gosc AS 'Faule gosc',
     (Mecze.stat_gospo + Mecze.stat_gosc) AS 'Meczowe',
     Sędziowie.Nazwa AS Sędzia
     FROM Mecze
@@ -32,6 +34,8 @@ ogólna = """
     Mecze.gole_kraj2 As 'Gole drużyny 2',
     Mecze.strzaly_kraj1 AS 'Strzały drużyny 1',
     Mecze.strzaly_kraj2 AS 'Strzały drużyny 2',
+    Mecze.celne_kraj1 AS 'Celne strzały drużyny 1',
+    Mecze.celne_kraj2 AS 'Celne strzały drużyny 2',
     Mecze.faule_kraj1 AS 'Faule drużyny 1', 
     Mecze.faule_kraj2 AS 'Faule drużyny 2',
     Mecze.rozne_kraj1 AS 'Rożne drużyny 1',
@@ -64,10 +68,9 @@ sędziowa = """
 dfsedzia = pd.read_sql_query(sędziowa, polacz).round(2)
 
 
-df1 = dfwc[['Drużyna 1', 'Gole drużyny 1', 'Gole drużyny 2', 'Strzały drużyny 1', 'Strzały drużyny 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Rożne drużyny 1', 'Rożne drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2', 'Auty drużyny 1', 'Auty drużyny 2', 'Odbiory drużyny 1', 'Odbiory drużyny 2', 'Podania drużyny 1', 'Podania drużyny 2', 'Spalone drużyny 1', 'Spalone drużyny 2']].copy()
-df2 = dfwc[['Drużyna 2', 'Gole drużyny 2', 'Gole drużyny 1', 'Strzały drużyny 2', 'Strzały drużyny 1', 'Faule drużyny 2', 'Faule drużyny 1', 'Rożne drużyny 2', 'Rożne drużyny 1', 'Kartki drużyny 2', 'Kartki drużyny 1', 'Auty drużyny 2', 'Auty drużyny 1', 'Odbiory drużyny 2', 'Odbiory drużyny 1', 'Podania drużyny 2', 'Podania drużyny 1', 'Spalone drużyny 2', 'Spalone drużyny 1']].copy()
-df1.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
-df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
+df1 = dfwc[['Drużyna 1', 'Gole drużyny 1', 'Gole drużyny 2', 'Strzały drużyny 1', 'Strzały drużyny 2', 'Celne strzały drużyny 1', 'Celne strzały drużyny 2',  'Faule drużyny 1', 'Faule drużyny 2', 'Rożne drużyny 1', 'Rożne drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2', 'Auty drużyny 1', 'Auty drużyny 2', 'Odbiory drużyny 1', 'Odbiory drużyny 2', 'Podania drużyny 1', 'Podania drużyny 2', 'Spalone drużyny 1', 'Spalone drużyny 2']].copy()
+df2 = dfwc[['Drużyna 2', 'Gole drużyny 2', 'Gole drużyny 1', 'Strzały drużyny 2', 'Strzały drużyny 1', 'Celne strzały drużyny 2', 'Celne strzały drużyny 1', 'Faule drużyny 2', 'Faule drużyny 1', 'Rożne drużyny 2', 'Rożne drużyny 1', 'Kartki drużyny 2', 'Kartki drużyny 1', 'Auty drużyny 2', 'Auty drużyny 1', 'Odbiory drużyny 2', 'Odbiory drużyny 1', 'Podania drużyny 2', 'Podania drużyny 1', 'Spalone drużyny 2', 'Spalone drużyny 1']].copy()
+df1.columns = df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Celne wykonane', 'Celne przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
 dfciek = pd.concat([df1, df2], ignore_index=True)
 dfsrednie = dfciek.groupby('Drużyna').mean().round(2).reset_index()
 
@@ -95,8 +98,8 @@ with Mundial:
         st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
 
     Nadchodzi = [
-        ("Francja", "Hiszpania"),
-        ("Anglia", "Argentyna"),
+        ("Francja", "Anglia"),
+        ("Hiszpania", "Argentyna"),
     ]
 
     if "filtry" not in st.session_state:
@@ -108,7 +111,7 @@ with Mundial:
     if "g_d2" not in st.session_state:
         st.session_state.g_d2 = Nadchodzi[0][1]
 
-    st.subheader("Nadchodzące mecze półfinałowe", text_alignment='center')
+    st.subheader("Nadchodzące mecze o medale", text_alignment='center')
 
     for gosp, gosc in Nadchodzi:
         with st.container(border=True):
@@ -130,6 +133,7 @@ with Mundial:
     Mapping = {
         "Gole": ["Gole drużyny 1", "Gole drużyny 2"],
         "Strzały": ["Strzały drużyny 1", "Strzały drużyny 2"],
+        "Celne strzały": ["Celne strzały drużyny 1", "Celne strzały drużyny 2"],
         "Faule": ["Faule drużyny 1", "Faule drużyny 2"],
         "Rzuty rożne": ["Rożne drużyny 1", "Rożne drużyny 2"],
         "Kartki": ["Kartki drużyny 1", "Kartki drużyny 2"],
@@ -149,11 +153,11 @@ with Mundial:
             kolumnywybrane.extend(Mapping[kategorie])
 
     kl = [
-        'Drużyna 1', 'Gole drużyny 1', 'Strzały drużyny 1', 'Faule drużyny 1', 'Rożne drużyny 1', 'Kartki drużyny 1', 'Auty drużyny 1', 'Odbiory drużyny 1', 'Spalone drużyny 1', 'Podania drużyny 1',
+        'Drużyna 1', 'Gole drużyny 1', 'Strzały drużyny 1', 'Celne strzały drużyny 1', 'Faule drużyny 1', 'Rożne drużyny 1', 'Kartki drużyny 1', 'Auty drużyny 1', 'Odbiory drużyny 1', 'Spalone drużyny 1', 'Podania drużyny 1',
     ]
 
     kp = [
-        'Drużyna 2', 'Gole drużyny 2', 'Strzały drużyny 2', 'Faule drużyny 2', 'Rożne drużyny 2', 'Kartki drużyny 2', 'Auty drużyny 2', 'Odbiory drużyny 2', 'Spalone drużyny 2', 'Podania drużyny 2',
+        'Drużyna 2', 'Gole drużyny 2', 'Strzały drużyny 2', 'Celne strzały drużyny 2', 'Faule drużyny 2', 'Rożne drużyny 2', 'Kartki drużyny 2', 'Auty drużyny 2', 'Odbiory drużyny 2', 'Spalone drużyny 2', 'Podania drużyny 2',
     ]
 
     dfm = dfwc.copy()
@@ -168,6 +172,7 @@ with Mundial:
         st.write("Statystyki: ", d1)
         st.write("Gole strzelone", dfd1["Gole strzelone"].mean().round(2),"Gole stracone", dfd1["Gole stracone"].mean().round(2))
         st.write("Strzały wykonane", dfd1["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd1["Strzały przeciwko"].mean().round(2))
+        st.write("Celne strzały wykonane", dfd1["Celne wykonane"].mean().round(2), "Celne strzały przeciwko", dfd1["Celne przeciwko"].mean().round(2))
         st.write("Faule popełnione", dfd1["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd1["Faule wywalczone"].mean().round(2))
         st.write("Rożne zdobyte", dfd1["Rożne zdobyte"].mean().round(2), "Rożne stracone", dfd1["Rożne stracone"].mean().round(2))
         st.write("Kartki otrzymane", dfd1["Kartki otrzymane"].mean().round(2), "Kartki przeciwko", dfd1["Kartki przeciwko"].mean().round(2))
@@ -186,6 +191,7 @@ with Mundial:
         st.write("Statystyki: ", d2)
         st.write("Gole strzelone", dfd2["Gole strzelone"].mean().round(2), "Gole stracone", dfd2["Gole stracone"].mean().round(2))
         st.write("Strzały wykonane", dfd2["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd2["Strzały przeciwko"].mean().round(2))
+        st.write("Celne strzały wykonane", dfd2["Celne wykonane"].mean().round(2), "Celne strzały przeciwko", dfd2["Celne przeciwko"].mean().round(2))
         st.write("Faule popełnione", dfd2["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd2["Faule wywalczone"].mean().round(2))
         st.write("Rożne zdobyte", dfd2["Rożne zdobyte"].mean().round(2), "Rożne stracone", dfd2["Rożne stracone"].mean().round(2))
         st.write("Kartki otrzymane", dfd2["Kartki otrzymane"].mean().round(2), "Kartki przeciwko", dfd2["Kartki przeciwko"].mean().round(2))
@@ -201,17 +207,40 @@ with Mundial:
 
 
     with Ekstraklasa:
+        st.subheader("Statystyki drużyn ekstraklasy")
+        dfekstrah = dfekstra[['Gospodarz', 'Faule gospodarz', 'Faule gosc']].copy()
+        dfekstrah = dfekstrah.rename(columns={
+            'Gospodarz': 'Drużyna',
+            'Faule gospodarz': 'Faule zrobione',
+            'Faule gosc': 'Faule wywalczone'
+        })
+
+        dfekstraa = dfekstra[['Gosc', 'Faule gosc', 'Faule gospodarz']].copy()
+        dfekstraa = dfekstrah.rename(columns={
+            'Gosc': 'Drużyna',
+            'Faule gosc': 'Faule zrobione',
+            'Faule gospodarz': 'Faule wywalczone'
+        })
+        dfekstraw = pd.concat([dfekstrah, dfekstraa], ignore_index=True)
+        dfekstrap = dfekstraw.groupby('Drużyna').agg({
+            'Faule zrobione': 'mean',
+            'Faule wywalczone': 'mean',
+        }).reset_index()
+
+        st.dataframe(dfekstrap, hide_index=True)
+
         st.subheader("Wszystkie mecze ekstraklasy wybranej drużyny")
         lista_kluby = dfekstra["Gospodarz"].unique()
+
         Klub = st.selectbox("Wybierz drużynę", lista_kluby)
 
         dfekstra_gospo = dfekstra[dfekstra['Gospodarz'] == Klub]
         dfekstra_gosc = dfekstra[dfekstra['Gosc'] == Klub]
 
-        f1 = dfekstra_gospo["Faule Gospo"].mean()
-        f2 = dfekstra_gosc["Faule Gosc"].mean()
-        f3 = dfekstra_gospo["Faule Gosc"].mean()
-        f4 = dfekstra_gosc["Faule Gospo"].mean()
+        f1 = dfekstra_gospo["Faule gospodarz"].mean()
+        f2 = dfekstra_gosc["Faule gosc"].mean()
+        f3 = dfekstra_gospo["Faule gosc"].mean()
+        f4 = dfekstra_gosc["Faule gospodarz"].mean()
 
         g1, g2, g3 = st.columns(3)
         with g1:
@@ -231,8 +260,34 @@ with Mundial:
             st.write("Faule meczowe jako gość", (f2 + f4).round(2))
             st.write("Średnie meczowe", ((f1+f3+f2+f4)/2).round(2))
 
+        st.subheader("Minimalna liczba fauli")
+        war = st.number_input("Wpisz min liczbę fauli", value=0, width=300)
+        dfw = dfekstra_gospo.copy()
+        dfw['Spełniona linia?'] = np.where(
+            dfw['Faule gospodarz'] >= war,
+            'Tak',
+            'Nie'
+        )
+        wykres = px.bar(
+            dfw,
+            x='Gosc',
+            y='Faule gospodarz',
+            text='Faule gospodarz',
+            color='Spełniona linia?',
+            color_discrete_map ={
+                'Tak': '#2ca02c',
+                'Nie': '#d62728'
+
+            }
+        )
+
+        wykres.add_hline(y=war, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana", annotation_position="top right")
+        wykres.update_xaxes(categoryorder='array', categoryarray=dfw['Gosc'])
+        st.plotly_chart(wykres)
+        dfwt = dfw['Spełniona linia?'].value_counts()
+        st.write("Spełnienie warunku: ", dfwt.get("Tak"), '/',  17)
+
         st.subheader(f"{Klub} jako gospodarz")
         st.dataframe(dfekstra_gospo, hide_index=True)
         st.subheader(f"{Klub} jako gość")
         st.dataframe(dfekstra_gosc, hide_index=True)
-
