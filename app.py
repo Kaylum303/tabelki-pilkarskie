@@ -59,7 +59,7 @@ ogólna = """
 dfwc = pd.read_sql_query(ogólna, polacz)
 
 sędziowa = """
-        SELECT Sędziowie.Nazwa, avg(faule_kraj1 + faule_kraj2) as Faule, avg(kartki_kraj1 + kartki_kraj2) as Kartki
+        SELECT Sędziowie.Nazwa, count(*) as mecze, avg(faule_kraj1 + faule_kraj2) as Faule, avg(kartki_kraj1 + kartki_kraj2) as Kartki
         from Mecze, Sędziowie
         where Mecze.id_sędzia = Sędziowie.id_sędzia
         group by Nazwa
@@ -97,36 +97,6 @@ with Mundial:
         st.write("Średnia odwgizdanych fauli: ", dfs["Faule"].mean())
         st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
 
-    Nadchodzi = [
-        ("Francja", "Anglia"),
-        ("Hiszpania", "Argentyna"),
-    ]
-
-    if "filtry" not in st.session_state:
-        st.session_state.filtry = []
-
-    if "g_d1" not in st.session_state:
-        st.session_state.g_d1 = Nadchodzi[0][0]
-
-    if "g_d2" not in st.session_state:
-        st.session_state.g_d2 = Nadchodzi[0][1]
-
-    st.subheader("Nadchodzące mecze o medale", text_alignment='center')
-
-    for gosp, gosc in Nadchodzi:
-        with st.container(border=True):
-            k1, k2, k3, k4 = st.columns([2,1,1,1])
-            with k1:
-                st.markdown(f"<h5 style='text-align: right;'>{gosp}</h5>", unsafe_allow_html=True)
-            with k2:
-                st.markdown("<h5 style='text-align: center; color: gray;'>VS</h5>", unsafe_allow_html=True)
-            with k3:
-                st.markdown(f"<h5 style='text-align: left;'>{gosc}</h5>", unsafe_allow_html=True)
-            with k4:
-                if st.button("Porównaj drużyny", key=f"btn_{gosp}_{gosc}", use_container_width=True):
-                    st.session_state.g_d1 = gosp
-                    st.session_state.g_d2 = gosc
-                    st.rerun()
 
 
     st.subheader("Porównywarka drużyn", text_alignment='center')
@@ -147,9 +117,9 @@ with Mundial:
     p1, p2, p3 = st.columns([1, 1, 1])
     kategorie = dfwc.columns.tolist()
     with p2:
-        st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki",options=list(Mapping.keys()), key="filtry")
+        wybrane = st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki",options=list(Mapping.keys()))
         kolumnywybrane = ["Drużyna 1", "Drużyna 2"]
-        for kategorie in st.session_state.filtry:
+        for kategorie in wybrane:
             kolumnywybrane.extend(Mapping[kategorie])
 
     kl = [
@@ -160,13 +130,15 @@ with Mundial:
         'Drużyna 2', 'Gole drużyny 2', 'Strzały drużyny 2', 'Celne strzały drużyny 2', 'Faule drużyny 2', 'Rożne drużyny 2', 'Kartki drużyny 2', 'Auty drużyny 2', 'Odbiory drużyny 2', 'Spalone drużyny 2', 'Podania drużyny 2',
     ]
 
-    dfm = dfwc.copy()
+    dfm1 = dfwc.copy()
+    dfm2 = dfwc.copy()
     pl, kol1, kol2, pp = st.columns([1,2,2,1])
     with kol1:
-        d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lk, key="g_d1")
-        m = (dfm['Drużyna 2'] == d1)
-        dfm.loc[m, kl + kp] = dfm.loc[m, kp + kl].values
-        st.dataframe(dfm[dfm['Drużyna 1'] == d1], column_order=kolumnywybrane, hide_index=True)
+        d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lk)
+
+        m1 = (dfm1['Drużyna 2'] == d1)
+        dfm1.loc[m1, kl + kp] = dfm1.loc[m1, kp + kl].values
+        st.dataframe(dfm1[dfm1['Drużyna 1'] == d1], column_order=kolumnywybrane, hide_index=True)
         dfd1 = dfciek[dfciek['Drużyna'] == d1]
 
         st.write("Statystyki: ", d1)
@@ -182,10 +154,10 @@ with Mundial:
         st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd1["Spalone przeciwnika"].mean().round(2))
 
     with kol2:
-        d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lk, key="g_d2")
-        m = (dfm['Drużyna 2'] == d2)
-        dfm.loc[m, kl + kp] = dfm.loc[m, kp + kl].values
-        st.dataframe(dfm[dfm['Drużyna 1'] == d2], column_order=kolumnywybrane, hide_index=True)
+        d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lk)
+        m2 = (dfm2['Drużyna 2'] == d2)
+        dfm2.loc[m2, kl + kp] = dfm2.loc[m2, kp + kl].values
+        st.dataframe(dfm2[dfm2['Drużyna 1'] == d2], column_order=kolumnywybrane, hide_index=True)
         dfd2 = dfciek[dfciek['Drużyna'] == d2]
 
         st.write("Statystyki: ", d2)
@@ -199,10 +171,6 @@ with Mundial:
         st.write("Odbiory wykonane", dfd2["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko", dfd2["Odbiory przeciwko"].mean().round(2))
         st.write("Podania wykonane", dfd2["Podania wykonane"].mean().round(2), "Podania przeciwnika", dfd2["Podania przeciwnika"].mean().round(2))
         st.write("Spalone zrobione", dfd2["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd2["Spalone przeciwnika"].mean().round(2))
-
-
-
-
 
 
 
@@ -225,18 +193,17 @@ with Mundial:
         dfekstrap = dfekstraw.groupby('Drużyna').agg({
             'Faule zrobione': 'mean',
             'Faule wywalczone': 'mean',
-        }).reset_index()
+        }).reset_index().round(1)
+        st.dataframe(dfekstrap, hide_index=True, width=500)
 
-        st.dataframe(dfekstrap, hide_index=True)
+
+
 
         st.subheader("Wszystkie mecze ekstraklasy wybranej drużyny")
         lista_kluby = dfekstra["Gospodarz"].unique()
-
-        Klub = st.selectbox("Wybierz drużynę", lista_kluby)
-
+        Klub = st.selectbox("Wybierz drużynę", lista_kluby, width = 300)
         dfekstra_gospo = dfekstra[dfekstra['Gospodarz'] == Klub]
         dfekstra_gosc = dfekstra[dfekstra['Gosc'] == Klub]
-
         f1 = dfekstra_gospo["Faule gospodarz"].mean()
         f2 = dfekstra_gosc["Faule gosc"].mean()
         f3 = dfekstra_gospo["Faule gosc"].mean()
@@ -260,16 +227,19 @@ with Mundial:
             st.write("Faule meczowe jako gość", (f2 + f4).round(2))
             st.write("Średnie meczowe", ((f1+f3+f2+f4)/2).round(2))
 
-        st.subheader("Minimalna liczba fauli")
-        war = st.number_input("Wpisz min liczbę fauli", value=0, width=300)
-        dfw = dfekstra_gospo.copy()
-        dfw['Spełniona linia?'] = np.where(
-            dfw['Faule gospodarz'] >= war,
+
+
+
+        st.subheader("Wykres fauli popełnionych")
+        warp = st.number_input("Wpisz linijkę fauli", value=0, width=300)
+        dfp = dfekstra_gospo.copy()
+        dfp['Spełniona linia?'] = np.where(
+            dfp['Faule gospodarz'] >= warp,
             'Tak',
             'Nie'
         )
-        wykres = px.bar(
-            dfw,
+        wykresp = px.bar(
+            dfp,
             x='Gosc',
             y='Faule gospodarz',
             text='Faule gospodarz',
@@ -281,11 +251,45 @@ with Mundial:
             }
         )
 
-        wykres.add_hline(y=war, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana", annotation_position="top right")
-        wykres.update_xaxes(categoryorder='array', categoryarray=dfw['Gosc'])
-        st.plotly_chart(wykres)
-        dfwt = dfw['Spełniona linia?'].value_counts()
-        st.write("Spełnienie warunku: ", dfwt.get("Tak"), '/',  17)
+
+        wykresp.add_hline(y=warp, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana", annotation_position="top right")
+        wykresp.update_xaxes(categoryorder='array', categoryarray=dfp['Gosc'])
+        st.plotly_chart(wykresp)
+        dfpw = dfp['Spełniona linia?'].value_counts()
+        st.write("Spełnienie warunku: ", dfpw.get("Tak"), '/',  17)
+
+        st.subheader("Wykres fauli wywalczonych")
+        warw = st.number_input("Wpisz min liczbę fauli", value=0, width=300)
+        dfw = dfekstra_gospo.copy()
+        dfw['Spełniona linia?'] = np.where(
+            dfp['Faule gosc'] >= warw,
+            'Tak',
+            'Nie'
+        )
+        wykresw = px.bar(
+            dfw,
+            x='Gosc',
+            y='Faule gosc',
+            text='Faule gosc',
+            color='Spełniona linia?',
+            color_discrete_map={
+                'Tak': '#2ca02c',
+                'Nie': '#d62728'
+
+            }
+        )
+
+        wykresw.add_hline(y=warw, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana",annotation_position="top right")
+        wykresw.update_xaxes(categoryorder='array', categoryarray=dfw['Gosc'])
+        st.plotly_chart(wykresw)
+        dfww = dfw['Spełniona linia?'].value_counts()
+        st.write("Spełnienie warunku: ", dfww.get("Tak"), '/', 17)
+
+
+
+
+
+
 
         st.subheader(f"{Klub} jako gospodarz")
         st.dataframe(dfekstra_gospo, hide_index=True)
