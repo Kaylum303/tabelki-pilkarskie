@@ -176,14 +176,14 @@ with Mundial:
 
     with Ekstraklasa:
         st.subheader("Statystyki drużyn ekstraklasy")
-        dfekstrah = dfekstra[['Gospodarz', 'Faule gospodarz', 'Faule gosc']].copy()
+        dfekstrah = dfekstra[['Gospodarz', 'Faule gospodarz', 'Faule gosc', 'Meczowe']].copy()
         dfekstrah = dfekstrah.rename(columns={
             'Gospodarz': 'Drużyna',
             'Faule gospodarz': 'Faule zrobione',
             'Faule gosc': 'Faule wywalczone'
         })
 
-        dfekstraa = dfekstra[['Gosc', 'Faule gosc', 'Faule gospodarz']].copy()
+        dfekstraa = dfekstra[['Gosc', 'Faule gosc', 'Faule gospodarz', 'Meczowe']].copy()
         dfekstraa = dfekstrah.rename(columns={
             'Gosc': 'Drużyna',
             'Faule gosc': 'Faule zrobione',
@@ -193,10 +193,20 @@ with Mundial:
         dfekstrap = dfekstraw.groupby('Drużyna').agg({
             'Faule zrobione': 'mean',
             'Faule wywalczone': 'mean',
+            'Meczowe': 'mean'
         }).reset_index().round(1)
-        st.dataframe(dfekstrap, hide_index=True, width=500)
+
+        dfekstras = dfekstra.groupby('Sędzia').agg(
+            Meczów =('Sędzia', 'count'),
+            średnia=('Meczowe', 'mean')
+        ).reset_index().round(1)
 
 
+        a1, a2 = st.columns(2)
+        with a1:
+            st.dataframe(dfekstrap, hide_index=True, width=500)
+        with a2:
+            st.dataframe(dfekstras, hide_index=True, width=500)
 
 
         st.subheader("Wszystkie mecze ekstraklasy wybranej drużyny")
@@ -230,7 +240,7 @@ with Mundial:
 
 
 
-        st.subheader("Wykres fauli popełnionych")
+        st.subheader("Wykres fauli popełnionych jako gospodarz")
         warp = st.number_input("Wpisz linijkę fauli", value=0, width=300)
         dfp = dfekstra_gospo.copy()
         dfp['Spełniona linia?'] = np.where(
@@ -238,6 +248,7 @@ with Mundial:
             'Tak',
             'Nie'
         )
+
         wykresp = px.bar(
             dfp,
             x='Gosc',
@@ -247,8 +258,8 @@ with Mundial:
             color_discrete_map ={
                 'Tak': '#2ca02c',
                 'Nie': '#d62728'
-
-            }
+            },
+            hover_data = ['Sędzia']
         )
 
 
@@ -258,7 +269,7 @@ with Mundial:
         dfpw = dfp['Spełniona linia?'].value_counts()
         st.write("Spełnienie warunku: ", dfpw.get("Tak"), '/',  17)
 
-        st.subheader("Wykres fauli wywalczonych")
+        st.subheader("Wykres fauli wywalczonych jako gospodarz")
         warw = st.number_input("Wpisz min liczbę fauli", value=0, width=300)
         dfw = dfekstra_gospo.copy()
         dfw['Spełniona linia?'] = np.where(
@@ -266,6 +277,7 @@ with Mundial:
             'Tak',
             'Nie'
         )
+
         wykresw = px.bar(
             dfw,
             x='Gosc',
@@ -275,8 +287,8 @@ with Mundial:
             color_discrete_map={
                 'Tak': '#2ca02c',
                 'Nie': '#d62728'
-
-            }
+            },
+            hover_data=['Sędzia']
         )
 
         wykresw.add_hline(y=warw, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana",annotation_position="top right")
@@ -284,12 +296,6 @@ with Mundial:
         st.plotly_chart(wykresw)
         dfww = dfw['Spełniona linia?'].value_counts()
         st.write("Spełnienie warunku: ", dfww.get("Tak"), '/', 17)
-
-
-
-
-
-
 
         st.subheader(f"{Klub} jako gospodarz")
         st.dataframe(dfekstra_gospo, hide_index=True)
