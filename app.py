@@ -9,80 +9,69 @@ st.set_page_config(layout="wide")
 
 conn = sqlite3.connect("staty.db")
 mecze = """
-    SELECT 
-    Mecze.kolejka,
-    gospodarze.Nazwa AS Gospodarz,
-    goscie.Nazwa AS Gosc,
-    Mecze.stat_gospo AS 'Faule gospodarz',
-    Mecze.stat_gosc AS 'Faule gosc',
-    (Mecze.stat_gospo + Mecze.stat_gosc) AS 'Meczowe',
-    Sędziowie.Nazwa AS Sędzia
-    FROM Mecze
-    LEFT JOIN Kluby AS gospodarze ON Mecze.id_gospo = gospodarze.id
-    LEFT JOIN kluby AS goscie ON Mecze.id_gosc = goscie.id
-    LEFT JOIN Sędziowie ON Mecze.id_sedzia = Sędziowie.id;
+        SELECT Mecze.kolejka, \
+               gospodarze.Nazwa AS Gospodarz, \
+               goscie.Nazwa     AS Gosc, \
+               Mecze.stat_gospo AS 'Faule gospodarz', Mecze.stat_gosc AS 'Faule gosc', (Mecze.stat_gospo + Mecze.stat_gosc) AS 'Meczowe', Sędziowie.Nazwa AS Sędzia
+        FROM Mecze
+                 LEFT JOIN Kluby AS gospodarze ON Mecze.id_gospo = gospodarze.id
+                 LEFT JOIN kluby AS goscie ON Mecze.id_gosc = goscie.id
+                 LEFT JOIN Sędziowie ON Mecze.id_sedzia = Sędziowie.id;
         """
 dfekstra = pd.read_sql_query(mecze, conn)
 
 polacz = sqlite3.connect("Worldcup.db")
 ogólna = """
-    SELECT 
-    kraj1.Nazwa as 'Drużyna 1', 
-    kraj2.Nazwa as 'Drużyna 2',
-    Mecze.gole_kraj1 AS 'Gole drużyny 1',
-    Mecze.gole_kraj2 As 'Gole drużyny 2',
-    Mecze.strzaly_kraj1 AS 'Strzały drużyny 1',
-    Mecze.strzaly_kraj2 AS 'Strzały drużyny 2',
-    Mecze.celne_kraj1 AS 'Celne strzały drużyny 1',
-    Mecze.celne_kraj2 AS 'Celne strzały drużyny 2',
-    Mecze.faule_kraj1 AS 'Faule drużyny 1', 
-    Mecze.faule_kraj2 AS 'Faule drużyny 2',
-    Mecze.rozne_kraj1 AS 'Rożne drużyny 1',
-    Mecze.rozne_kraj2 AS 'Rożne drużyny 2',
-    Mecze.kartki_kraj1 AS 'Kartki drużyny 1',
-    Mecze.kartki_kraj2 AS 'Kartki drużyny 2',
-    Mecze.auty_kraj1 AS 'Auty drużyny 1',
-    Mecze.auty_kraj2 AS 'Auty drużyny 2',
-    Mecze.odbiory_kraj1 AS 'Odbiory drużyny 1',
-    Mecze.odbiory_kraj2 AS 'Odbiory drużyny 2',
-    Mecze.spalone_kraj1 AS 'Spalone drużyny 1',
-    Mecze.spalone_kraj2 AS 'Spalone drużyny 2',
-    Mecze.podania_kraj1 AS 'Podania drużyny 1',
-    Mecze.podania_kraj2 AS 'Podania drużyny 2',
-    Sędziowie.Nazwa AS Sędzia
-    FROM Mecze 	
-    LEFT Join Kraje as kraj1 on Mecze.id_kraj1 = kraj1.id_kraj
-    LEFT Join Kraje as kraj2 on Mecze.id_kraj2 = kraj2.id_kraj
-    LEFT Join Sędziowie on Mecze.id_sędzia = Sędziowie.id_sędzia;
-    """
+         SELECT kraj1.Nazwa as 'Drużyna 1', kraj2.Nazwa as 'Drużyna 2', Mecze.gole_kraj1 AS 'Gole drużyny 1', Mecze.gole_kraj2 As 'Gole drużyny 2', Mecze.strzaly_kraj1 AS 'Strzały drużyny 1', Mecze.strzaly_kraj2 AS 'Strzały drużyny 2', Mecze.celne_kraj1 AS 'Celne strzały drużyny 1', Mecze.celne_kraj2 AS 'Celne strzały drużyny 2', Mecze.faule_kraj1 AS 'Faule drużyny 1', Mecze.faule_kraj2 AS 'Faule drużyny 2', Mecze.rozne_kraj1 AS 'Rożne drużyny 1', Mecze.rozne_kraj2 AS 'Rożne drużyny 2', Mecze.kartki_kraj1 AS 'Kartki drużyny 1', Mecze.kartki_kraj2 AS 'Kartki drużyny 2', Mecze.auty_kraj1 AS 'Auty drużyny 1', Mecze.auty_kraj2 AS 'Auty drużyny 2', Mecze.odbiory_kraj1 AS 'Odbiory drużyny 1', Mecze.odbiory_kraj2 AS 'Odbiory drużyny 2', Mecze.spalone_kraj1 AS 'Spalone drużyny 1', Mecze.spalone_kraj2 AS 'Spalone drużyny 2', Mecze.podania_kraj1 AS 'Podania drużyny 1', Mecze.podania_kraj2 AS 'Podania drużyny 2', Sędziowie.Nazwa AS Sędzia
+         FROM Mecze
+                  LEFT Join Kraje as kraj1 on Mecze.id_kraj1 = kraj1.id_kraj
+                  LEFT Join Kraje as kraj2 on Mecze.id_kraj2 = kraj2.id_kraj
+                  LEFT Join Sędziowie on Mecze.id_sędzia = Sędziowie.id_sędzia; \
+         """
 dfwc = pd.read_sql_query(ogólna, polacz)
 
 sędziowa = """
-        SELECT Sędziowie.Nazwa, count(*) as mecze, avg(faule_kraj1 + faule_kraj2) as Faule, avg(kartki_kraj1 + kartki_kraj2) as Kartki
-        from Mecze, Sędziowie
-        where Mecze.id_sędzia = Sędziowie.id_sędzia
-        group by Nazwa
-        order by faule desc
-        """
+           SELECT Sędziowie.Nazwa, \
+                  count(*)                         as mecze, \
+                  avg(faule_kraj1 + faule_kraj2)   as Faule, \
+                  avg(kartki_kraj1 + kartki_kraj2) as Kartki
+           from Mecze, \
+                Sędziowie
+           where Mecze.id_sędzia = Sędziowie.id_sędzia
+           group by Nazwa
+           order by faule desc \
+           """
 dfsedzia = pd.read_sql_query(sędziowa, polacz).round(2)
 
-
-df1 = dfwc[['Drużyna 1', 'Gole drużyny 1', 'Gole drużyny 2', 'Strzały drużyny 1', 'Strzały drużyny 2', 'Celne strzały drużyny 1', 'Celne strzały drużyny 2',  'Faule drużyny 1', 'Faule drużyny 2', 'Rożne drużyny 1', 'Rożne drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2', 'Auty drużyny 1', 'Auty drużyny 2', 'Odbiory drużyny 1', 'Odbiory drużyny 2', 'Podania drużyny 1', 'Podania drużyny 2', 'Spalone drużyny 1', 'Spalone drużyny 2']].copy()
-df2 = dfwc[['Drużyna 2', 'Gole drużyny 2', 'Gole drużyny 1', 'Strzały drużyny 2', 'Strzały drużyny 1', 'Celne strzały drużyny 2', 'Celne strzały drużyny 1', 'Faule drużyny 2', 'Faule drużyny 1', 'Rożne drużyny 2', 'Rożne drużyny 1', 'Kartki drużyny 2', 'Kartki drużyny 1', 'Auty drużyny 2', 'Auty drużyny 1', 'Odbiory drużyny 2', 'Odbiory drużyny 1', 'Podania drużyny 2', 'Podania drużyny 1', 'Spalone drużyny 2', 'Spalone drużyny 1']].copy()
-df1.columns = df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko', 'Celne wykonane', 'Celne przeciwko', 'Faule popełnione', 'Faule wywalczone', 'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte', 'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane', 'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
+df1 = dfwc[['Drużyna 1', 'Gole drużyny 1', 'Gole drużyny 2', 'Strzały drużyny 1', 'Strzały drużyny 2',
+            'Celne strzały drużyny 1', 'Celne strzały drużyny 2', 'Faule drużyny 1', 'Faule drużyny 2',
+            'Rożne drużyny 1', 'Rożne drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2', 'Auty drużyny 1',
+            'Auty drużyny 2', 'Odbiory drużyny 1', 'Odbiory drużyny 2', 'Podania drużyny 1', 'Podania drużyny 2',
+            'Spalone drużyny 1', 'Spalone drużyny 2']].copy()
+df2 = dfwc[['Drużyna 2', 'Gole drużyny 2', 'Gole drużyny 1', 'Strzały drużyny 2', 'Strzały drużyny 1',
+            'Celne strzały drużyny 2', 'Celne strzały drużyny 1', 'Faule drużyny 2', 'Faule drużyny 1',
+            'Rożne drużyny 2', 'Rożne drużyny 1', 'Kartki drużyny 2', 'Kartki drużyny 1', 'Auty drużyny 2',
+            'Auty drużyny 1', 'Odbiory drużyny 2', 'Odbiory drużyny 1', 'Podania drużyny 2', 'Podania drużyny 1',
+            'Spalone drużyny 2', 'Spalone drużyny 1']].copy()
+df1.columns = df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Strzały wykonane', 'Strzały przeciwko',
+                             'Celne wykonane', 'Celne przeciwko', 'Faule popełnione', 'Faule wywalczone',
+                             'Rożne zdobyte', 'Rożne stracone', 'Kartki otrzymane', 'Kartki przeciwko', 'Auty zdobyte',
+                             'Auty przeciwko', 'Odbiory wykonane', 'Odbiory przeciwko', 'Podania wykonane',
+                             'Podania przeciwnika', 'Spalone zrobione', 'Spalone przeciwnika']
 dfciek = pd.concat([df1, df2], ignore_index=True)
 dfsrednie = dfciek.groupby('Drużyna').mean().round(2).reset_index()
 
-Czeska, ILiga, Ekstraklasa2, Norweska, Szwedzka,  Mundial, Ekstraklasa1 = st.tabs(["Chance Liga 2026/2027", "Betclic 1 Liga 2026/2027","Ekstraklasa 2026/2027", "Elitenserien 2026", "Allsvenskan 2026",  "Mistrzostwa Świata 2026", "Ekstraklasa 25/26"])
-
+Ekstraklasa2, ILiga, Czeska, Norweska, Szwedzka, Duńska, Mundial, Ekstraklasa1 = st.tabs(
+    ["🇵🇱 Ekstraklasa 2026/2027", "🇵🇱 Betclic 1 Liga 2026/2027", "🇨🇿 Chance Liga 2026/2027", "🇳🇴 Elitenserien 2026",
+     "🇸🇪 Allsvenskan 2026", "🇩🇰 Superliga 2026/2027", "Mistrzostwa Świata 2026", "Ekstraklasa 25/26"])
 
 with Mundial:
     st.subheader("Tabela drużyn z ich statystykami średnio co mecz", text_alignment='center')
     st.dataframe(dfsrednie, hide_index=True)
-    st.info("Statystyki obejmują wyłącznie regulaminowy czas gry, bez dogrywki", icon="❕", width=515 )
+    st.info("Statystyki obejmują wyłącznie regulaminowy czas gry, bez dogrywki", icon="❕", width=515)
 
     st.subheader("Tabela statystyk sędziów", text_alignment='center')
-    p1, p2 = st.columns([1,1])
+    p1, p2 = st.columns([1, 1])
     ls = np.sort(pd.unique(dfwc['Sędzia']))
 
     with p1:
@@ -91,12 +80,12 @@ with Mundial:
 
     with p2:
         sw = st.selectbox("Mecze sędziego ", ls)
-        st.dataframe(dfwc[(dfwc['Sędzia'] == sw)], hide_index=True, column_order=['Drużyna 1','Drużyna 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Kartki drużyny 1', 'Kartki drużyny 2'])
+        st.dataframe(dfwc[(dfwc['Sędzia'] == sw)], hide_index=True,
+                     column_order=['Drużyna 1', 'Drużyna 2', 'Faule drużyny 1', 'Faule drużyny 2', 'Kartki drużyny 1',
+                                   'Kartki drużyny 2'])
         dfs = dfsedzia[dfsedzia["Nazwa"] == sw]
         st.write("Średnia odwgizdanych fauli: ", dfs["Faule"].mean())
         st.write("Średnia pokazanych kartek: ", dfs["Kartki"].mean())
-
-
 
     st.subheader("Porównywarka drużyn", text_alignment='center')
     Mapping = {
@@ -116,22 +105,27 @@ with Mundial:
     p1, p2, p3 = st.columns([1, 1, 1])
     kategorie = dfwc.columns.tolist()
     with p2:
-        wybrane = st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki",options=list(Mapping.keys()))
+        wybrane = st.multiselect("Statystyki do porównywarki", placeholder="Wybierz statystyki",
+                                 options=list(Mapping.keys()))
         kolumnywybrane = ["Drużyna 1", "Drużyna 2"]
         for kategorie in wybrane:
             kolumnywybrane.extend(Mapping[kategorie])
 
     kl = [
-        'Drużyna 1', 'Gole drużyny 1', 'Strzały drużyny 1', 'Celne strzały drużyny 1', 'Faule drużyny 1', 'Rożne drużyny 1', 'Kartki drużyny 1', 'Auty drużyny 1', 'Odbiory drużyny 1', 'Spalone drużyny 1', 'Podania drużyny 1',
+        'Drużyna 1', 'Gole drużyny 1', 'Strzały drużyny 1', 'Celne strzały drużyny 1', 'Faule drużyny 1',
+        'Rożne drużyny 1', 'Kartki drużyny 1', 'Auty drużyny 1', 'Odbiory drużyny 1', 'Spalone drużyny 1',
+        'Podania drużyny 1',
     ]
 
     kp = [
-        'Drużyna 2', 'Gole drużyny 2', 'Strzały drużyny 2', 'Celne strzały drużyny 2', 'Faule drużyny 2', 'Rożne drużyny 2', 'Kartki drużyny 2', 'Auty drużyny 2', 'Odbiory drużyny 2', 'Spalone drużyny 2', 'Podania drużyny 2',
+        'Drużyna 2', 'Gole drużyny 2', 'Strzały drużyny 2', 'Celne strzały drużyny 2', 'Faule drużyny 2',
+        'Rożne drużyny 2', 'Kartki drużyny 2', 'Auty drużyny 2', 'Odbiory drużyny 2', 'Spalone drużyny 2',
+        'Podania drużyny 2',
     ]
 
     dfm1 = dfwc.copy()
     dfm2 = dfwc.copy()
-    pl, kol1, kol2, pp = st.columns([1,2,2,1])
+    pl, kol1, kol2, pp = st.columns([1, 2, 2, 1])
     with kol1:
         d1 = st.selectbox("Wybierz drużynę 1 do wyświetlenia:", lk)
 
@@ -141,16 +135,26 @@ with Mundial:
         dfd1 = dfciek[dfciek['Drużyna'] == d1]
 
         st.write("Statystyki: ", d1)
-        st.write("Gole strzelone", dfd1["Gole strzelone"].mean().round(2),"Gole stracone", dfd1["Gole stracone"].mean().round(2))
-        st.write("Strzały wykonane", dfd1["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd1["Strzały przeciwko"].mean().round(2))
-        st.write("Celne strzały wykonane", dfd1["Celne wykonane"].mean().round(2), "Celne strzały przeciwko", dfd1["Celne przeciwko"].mean().round(2))
-        st.write("Faule popełnione", dfd1["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd1["Faule wywalczone"].mean().round(2))
-        st.write("Rożne zdobyte", dfd1["Rożne zdobyte"].mean().round(2), "Rożne stracone", dfd1["Rożne stracone"].mean().round(2))
-        st.write("Kartki otrzymane", dfd1["Kartki otrzymane"].mean().round(2), "Kartki przeciwko", dfd1["Kartki przeciwko"].mean().round(2))
-        st.write("Auty zdobyte", dfd1["Auty zdobyte"].mean().round(2), "Auty przeciwko", dfd1["Auty przeciwko"].mean().round(2))
-        st.write("Odbiory wykonane", dfd1["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko", dfd1["Odbiory przeciwko"].mean().round(2))
-        st.write("Podania wykonane", dfd1["Podania wykonane"].mean().round(2), "Podania przeciwnika", dfd1["Podania przeciwnika"].mean().round(2))
-        st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd1["Spalone przeciwnika"].mean().round(2))
+        st.write("Gole strzelone", dfd1["Gole strzelone"].mean().round(2), "Gole stracone",
+                 dfd1["Gole stracone"].mean().round(2))
+        st.write("Strzały wykonane", dfd1["Strzały wykonane"].mean().round(2), "Strzały przeciwko",
+                 dfd1["Strzały przeciwko"].mean().round(2))
+        st.write("Celne strzały wykonane", dfd1["Celne wykonane"].mean().round(2), "Celne strzały przeciwko",
+                 dfd1["Celne przeciwko"].mean().round(2))
+        st.write("Faule popełnione", dfd1["Faule popełnione"].mean().round(2), "Faule wywalczone",
+                 dfd1["Faule wywalczone"].mean().round(2))
+        st.write("Rożne zdobyte", dfd1["Rożne zdobyte"].mean().round(2), "Rożne stracone",
+                 dfd1["Rożne stracone"].mean().round(2))
+        st.write("Kartki otrzymane", dfd1["Kartki otrzymane"].mean().round(2), "Kartki przeciwko",
+                 dfd1["Kartki przeciwko"].mean().round(2))
+        st.write("Auty zdobyte", dfd1["Auty zdobyte"].mean().round(2), "Auty przeciwko",
+                 dfd1["Auty przeciwko"].mean().round(2))
+        st.write("Odbiory wykonane", dfd1["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko",
+                 dfd1["Odbiory przeciwko"].mean().round(2))
+        st.write("Podania wykonane", dfd1["Podania wykonane"].mean().round(2), "Podania przeciwnika",
+                 dfd1["Podania przeciwnika"].mean().round(2))
+        st.write("Spalone zrobione", dfd1["Spalone zrobione"].mean().round(2), "Spalone przeciwnika",
+                 dfd1["Spalone przeciwnika"].mean().round(2))
 
     with kol2:
         d2 = st.selectbox("Wybierz drużynę 2 do wyświetlenia:", lk)
@@ -160,18 +164,26 @@ with Mundial:
         dfd2 = dfciek[dfciek['Drużyna'] == d2]
 
         st.write("Statystyki: ", d2)
-        st.write("Gole strzelone", dfd2["Gole strzelone"].mean().round(2), "Gole stracone", dfd2["Gole stracone"].mean().round(2))
-        st.write("Strzały wykonane", dfd2["Strzały wykonane"].mean().round(2), "Strzały przeciwko", dfd2["Strzały przeciwko"].mean().round(2))
-        st.write("Celne strzały wykonane", dfd2["Celne wykonane"].mean().round(2), "Celne strzały przeciwko", dfd2["Celne przeciwko"].mean().round(2))
-        st.write("Faule popełnione", dfd2["Faule popełnione"].mean().round(2), "Faule wywalczone", dfd2["Faule wywalczone"].mean().round(2))
-        st.write("Rożne zdobyte", dfd2["Rożne zdobyte"].mean().round(2), "Rożne stracone", dfd2["Rożne stracone"].mean().round(2))
-        st.write("Kartki otrzymane", dfd2["Kartki otrzymane"].mean().round(2), "Kartki przeciwko", dfd2["Kartki przeciwko"].mean().round(2))
-        st.write("Auty zdobyte", dfd2["Auty zdobyte"].mean().round(2), "Auty przeciwko", dfd2["Auty przeciwko"].mean().round(2))
-        st.write("Odbiory wykonane", dfd2["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko", dfd2["Odbiory przeciwko"].mean().round(2))
-        st.write("Podania wykonane", dfd2["Podania wykonane"].mean().round(2), "Podania przeciwnika", dfd2["Podania przeciwnika"].mean().round(2))
-        st.write("Spalone zrobione", dfd2["Spalone zrobione"].mean().round(2), "Spalone przeciwnika", dfd2["Spalone przeciwnika"].mean().round(2))
-
-
+        st.write("Gole strzelone", dfd2["Gole strzelone"].mean().round(2), "Gole stracone",
+                 dfd2["Gole stracone"].mean().round(2))
+        st.write("Strzały wykonane", dfd2["Strzały wykonane"].mean().round(2), "Strzały przeciwko",
+                 dfd2["Strzały przeciwko"].mean().round(2))
+        st.write("Celne strzały wykonane", dfd2["Celne wykonane"].mean().round(2), "Celne strzały przeciwko",
+                 dfd2["Celne przeciwko"].mean().round(2))
+        st.write("Faule popełnione", dfd2["Faule popełnione"].mean().round(2), "Faule wywalczone",
+                 dfd2["Faule wywalczone"].mean().round(2))
+        st.write("Rożne zdobyte", dfd2["Rożne zdobyte"].mean().round(2), "Rożne stracone",
+                 dfd2["Rożne stracone"].mean().round(2))
+        st.write("Kartki otrzymane", dfd2["Kartki otrzymane"].mean().round(2), "Kartki przeciwko",
+                 dfd2["Kartki przeciwko"].mean().round(2))
+        st.write("Auty zdobyte", dfd2["Auty zdobyte"].mean().round(2), "Auty przeciwko",
+                 dfd2["Auty przeciwko"].mean().round(2))
+        st.write("Odbiory wykonane", dfd2["Odbiory wykonane"].mean().round(2), "Odbiory przeciwko",
+                 dfd2["Odbiory przeciwko"].mean().round(2))
+        st.write("Podania wykonane", dfd2["Podania wykonane"].mean().round(2), "Podania przeciwnika",
+                 dfd2["Podania przeciwnika"].mean().round(2))
+        st.write("Spalone zrobione", dfd2["Spalone zrobione"].mean().round(2), "Spalone przeciwnika",
+                 dfd2["Spalone przeciwnika"].mean().round(2))
 
 with Ekstraklasa1:
     st.subheader("Statystyki drużyn ekstraklasy")
@@ -190,16 +202,15 @@ with Ekstraklasa1:
     })
     dfekstraw = pd.concat([dfekstrah, dfekstraa], ignore_index=True)
     dfekstrap = dfekstraw.groupby('Drużyna').agg({
-    'Faule zrobione': 'mean',
-    'Faule wywalczone': 'mean',
-    'Meczowe': 'mean'
+        'Faule zrobione': 'mean',
+        'Faule wywalczone': 'mean',
+        'Meczowe': 'mean'
     }).reset_index().round(1)
 
     dfekstras = dfekstra.groupby('Sędzia').agg(
-    Meczów =('Sędzia', 'count'),
-    średnia=('Meczowe', 'mean')
+        Meczów=('Sędzia', 'count'),
+        średnia=('Meczowe', 'mean')
     ).reset_index().round(1)
-
 
     a1, a2 = st.columns(2)
     with a1:
@@ -207,10 +218,9 @@ with Ekstraklasa1:
     with a2:
         st.dataframe(dfekstras, hide_index=True, width=500)
 
-
     st.subheader("Wszystkie mecze ekstraklasy wybranej drużyny")
     lista_kluby = dfekstra["Gospodarz"].unique()
-    Klub = st.selectbox("Wybierz drużynę", lista_kluby, width = 300)
+    Klub = st.selectbox("Wybierz drużynę", lista_kluby, width=300)
     dfekstra_gospo = dfekstra[dfekstra['Gospodarz'] == Klub]
     dfekstra_gosc = dfekstra[dfekstra['Gosc'] == Klub]
     f1 = dfekstra_gospo["Faule gospodarz"].mean()
@@ -229,15 +239,12 @@ with Ekstraklasa1:
         st.subheader("Wywalczanie fauli")
         st.write(f"{Klub} jako gospodarz", f3.round(2))
         st.write(f"{Klub} jako gość", f4.round(2))
-        st.write("Średnio wywalczane", ((f3+f4)/2).round(2))
+        st.write("Średnio wywalczane", ((f3 + f4) / 2).round(2))
     with g3:
         st.subheader("Meczowe faule")
         st.write("Faule meczowe jako gospodarz", (f1 + f3).round(2))
         st.write("Faule meczowe jako gość", (f2 + f4).round(2))
-        st.write("Średnie meczowe", ((f1+f3+f2+f4)/2).round(2))
-
-
-
+        st.write("Średnie meczowe", ((f1 + f3 + f2 + f4) / 2).round(2))
 
     st.subheader("Wykres fauli popełnionych jako gospodarz")
     warp = st.number_input("Wpisz linijkę fauli", value=0, width=300)
@@ -254,19 +261,19 @@ with Ekstraklasa1:
         y='Faule gospodarz',
         text='Faule gospodarz',
         color='Spełniona linia?',
-        color_discrete_map ={
+        color_discrete_map={
             'Tak': '#2ca02c',
             'Nie': '#d62728'
         },
-        hover_data = ['Sędzia']
+        hover_data=['Sędzia']
     )
 
-
-    wykresp.add_hline(y=warp, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana", annotation_position="top right")
+    wykresp.add_hline(y=warp, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana",
+                      annotation_position="top right")
     wykresp.update_xaxes(categoryorder='array', categoryarray=dfp['Gosc'])
     st.plotly_chart(wykresp)
     dfpw = dfp['Spełniona linia?'].value_counts()
-    st.write("Spełnienie warunku: ", dfpw.get("Tak"), '/',  17)
+    st.write("Spełnienie warunku: ", dfpw.get("Tak"), '/', 17)
 
     st.subheader("Wykres fauli wywalczonych jako gospodarz")
     warw = st.number_input("Wpisz min liczbę fauli", value=0, width=300)
@@ -290,7 +297,8 @@ with Ekstraklasa1:
         hover_data=['Sędzia']
     )
 
-    wykresw.add_hline(y=warw, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana",annotation_position="top right")
+    wykresw.add_hline(y=warw, line_dash="dash", line_color='green', line_width=2, annotation_text="Linia wpisana",
+                      annotation_position="top right")
     wykresw.update_xaxes(categoryorder='array', categoryarray=dfw['Gosc'])
     st.plotly_chart(wykresw)
     dfww = dfw['Spełniona linia?'].value_counts()
@@ -302,106 +310,164 @@ with Ekstraklasa1:
     st.dataframe(dfekstra_gosc, hide_index=True)
 
 Dane = sqlite3.connect("Dane.db")
-Danemecze = """SELECT m.id_mecz, 
-                   m.kolejka, 
-r.Nazwa           AS Rozgrywki, 
-gosp.Nazwa        AS Gospodarz, 
-gosc.Nazwa        AS Gosc, 
+Danemecze = """SELECT m.id_mecz,
+                      m.kolejka,
+                      r.Nazwa           AS Rozgrywki,
+                      gosp.Nazwa        AS Gospodarz,
+                      gosc.Nazwa        AS Gosc,
 
-stat_gosp.Strzaly AS "Strzaly Gospo", 
-stat_gosp.Rozne   AS "Rożne Gospo", 
-stat_gosp.Faule   AS "Faule Gospo", 
+                      stat_gosp.Strzaly AS "Strzaly Gospo",
+                      stat_gosp.Rozne   AS "Rozne Gospo",
+                      stat_gosp.Faule   AS "Faule Gospo",
+                      stat_gosp.Zolte   AS "Zolte Gospo",
+                      stat_gosp.Czerwone AS "Czerwone Gospo",
 
-stat_gosc.Strzaly AS "Strzaly Gosc", 
-stat_gosc.Rozne   AS "Rożne Gosc", 
-stat_gosc.Faule   AS "Faule Gosc", 
-s.nazwa           as Sedzia
+                      stat_gosc.Strzaly AS "Strzaly Gosc",
+                      stat_gosc.Rozne   AS "Rozne Gosc",
+                      stat_gosc.Faule   AS "Faule Gosc",
+                      stat_gosc.Zolte   AS "Zolte Gosc",
+                      stat_gosc.Czerwone AS "Czerwone Gosc",
+                      s.nazwa           as Sedzia
 
-FROM Mecze m
-JOIN Rozgrywki r ON m.id_rozgrywek = r.id_rozgrywek
-JOIN Druzyny gosp ON m.id_gospodarz = gosp.id_druzyna
-JOIN Druzyny gosc ON m.id_gosc = gosc.id_druzyna
-JOIN Statystyki stat_gosp ON m.id_mecz = stat_gosp.id_mecz AND stat_gosp.rola = 'Gospodarz'
-JOIN Statystyki stat_gosc ON m.id_mecz = stat_gosc.id_mecz AND stat_gosc.rola = 'Gość'
-JOIN Sedziowie s on m.id_sedzia = s.id_sedzia
-ORDER BY m.id_mecz DESC; 
+               FROM Mecze m
+                        JOIN Rozgrywki r ON m.id_rozgrywek = r.id_rozgrywek
+                        JOIN Druzyny gosp ON m.id_gospodarz = gosp.id_druzyna
+                        JOIN Druzyny gosc ON m.id_gosc = gosc.id_druzyna
+                        JOIN Statystyki stat_gosp ON m.id_mecz = stat_gosp.id_mecz AND stat_gosp.rola = 'Gospodarz'
+                        JOIN Statystyki stat_gosc ON m.id_mecz = stat_gosc.id_mecz AND stat_gosc.rola = 'Gość'
+                        JOIN Sedziowie s on m.id_sedzia = s.id_sedzia
+               ORDER BY m.id_mecz desc;
             """
 dane = pd.read_sql_query(Danemecze, Dane)
+dane = dane.drop('id_mecz', axis=1)
 
-def pokaz_srednie_sedziego(df_ligi):
+def pokaz_faule_sedziego(df_ligi):
     df_ligi["Faule Meczowe"] = df_ligi['Faule Gospo'] + df_ligi['Faule Gosc']
     df_sedziowie = df_ligi.groupby('Sedzia').agg(
         Meczów=('Sedzia', 'count'),
         Średnia_fauli=('Faule Meczowe', 'mean')
     ).reset_index().round(1)
 
+    df_sedziowie.sort_values(by='Średnia_fauli', ascending=False, inplace=True)
     sedziowie = df_ligi["Sedzia"].unique()
+    wysokosc = (len(df_sedziowie) * 35) + 40
     a1, a2 = st.columns(2)
     with a1:
         st.subheader("Sędziowie ligi")
-        st.dataframe(df_sedziowie, hide_index=True, width= 530)
+        st.dataframe(df_sedziowie, hide_index=True, width=530, height=wysokosc)
+        st.write("Średnia ligowa:", df_sedziowie["Średnia_fauli"].mean().round(2))
 
     with a2:
         wybrany_sedzia = st.selectbox("Wybierz sedziego ", sedziowie)
-        st.dataframe(df_ligi[(df_ligi['Sedzia'] == wybrany_sedzia)], hide_index=True,column_order=['Gospodarz', 'Gosc', 'Faule Gospo', 'Faule Gosc'], width=500)
+        st.dataframe(df_ligi[(df_ligi['Sedzia'] == wybrany_sedzia)], hide_index=True,
+                     column_order=['Gospodarz', 'Gosc', 'Faule Gospo', 'Faule Gosc'], width=500)
 
 
 def pokaz_srednie_fauli(df_ligi):
     df_ligi_faule_gospo = df_ligi.groupby('Gospodarz').agg(
-        Średnia_popełnione=('Faule Gospo', 'mean'),
-        Średnia_wywalczone=('Faule Gosc', 'mean')
+        Popełnione=('Faule Gospo', 'mean'),
+        Wywalczone=('Faule Gosc', 'mean')
     ).reset_index().round(1)
+    df_ligi_faule_gospo["Meczowe"] = df_ligi_faule_gospo["Popełnione"] + df_ligi_faule_gospo["Wywalczone"]
 
     df_ligi_faule_gosc = df_ligi.groupby('Gosc').agg(
         Popełnione=('Faule Gosc', 'mean'),
         Wywalczone=('Faule Gospo', 'mean')
     ).reset_index().round(1)
+    df_ligi_faule_gosc["Meczowe"] = df_ligi_faule_gosc["Popełnione"] + df_ligi_faule_gosc["Wywalczone"]
 
+    wysokosc = (len(df_ligi_faule_gospo) * 35) + 40
     st.subheader("Średnie fauli")
-
     a1, a2 = st.columns(2)
     with a1:
-        st.dataframe(df_ligi_faule_gospo, hide_index=True, width=500, height=600)
+        st.dataframe(df_ligi_faule_gospo, hide_index=True, width=500, height=wysokosc)
     with a2:
-        st.dataframe(df_ligi_faule_gosc, hide_index=True, width=500, height=600)
+        st.dataframe(df_ligi_faule_gosc, hide_index=True, width=500, height=wysokosc)
+
+def pokaz_srednie_kartek(df_ligi):
+    df_ligi_zolte_gospo = df_ligi.groupby('Gospodarz').agg(
+        Otrzymane=('Zolte Gospo', 'mean'),
+        Wywalczone=('Zolte Gosc', 'mean')
+    ).reset_index().round(1)
+    df_ligi_zolte_gospo["Meczowe"] = df_ligi_zolte_gospo["Otrzymane"] + df_ligi_zolte_gospo["Wywalczone"]
+
+    df_ligi_zolte_gosc = df_ligi.groupby('Gosc').agg(
+        Otrzymane =('Zolte Gosc', 'mean'),
+        Wywalczone=('Zolte Gospo', 'mean')
+    ).reset_index().round(1)
+    df_ligi_zolte_gosc["Meczowe"] = df_ligi_zolte_gosc["Otrzymane"] + df_ligi_zolte_gosc["Wywalczone"]
+
+    wysokosc = (len(df_ligi_zolte_gospo) * 35) + 40
+    st.subheader("Średnie żółtych kartek")
+    a1, a2 = st.columns(2)
+    with a1:
+        st.dataframe(df_ligi_zolte_gospo, hide_index=True, width=500, height=wysokosc)
+    with a2:
+        st.dataframe(df_ligi_zolte_gosc, hide_index=True, width=500, height=wysokosc)
+
+def pokaz_kartki_sedziego(df_ligi):
+    df_ligi["Zolte Meczowe"] = df_ligi['Zolte Gospo'] + df_ligi['Zolte Gosc']
+    df_sedziowie = df_ligi.groupby('Sedzia').agg(
+        Meczów=('Sedzia', 'count'),
+        Średnia_zoltych=('Zolte Meczowe', 'mean')
+    ).reset_index().round(1)
+
+    df_sedziowie.sort_values(by='Średnia_zoltych', ascending=False, inplace=True)
+    sedziowie = df_ligi["Sedzia"].unique()
+    wysokosc = (len(df_sedziowie) * 35) + 40
+    a1, a2 = st.columns(2)
+    with a1:
+        st.subheader("Sędziowie ligi")
+        st.dataframe(df_sedziowie, hide_index=True, width=530, height=wysokosc)
+        st.write("Średnia ligowa:", df_sedziowie["Średnia_zoltych"].mean().round(2))
+
+    with a2:
+        wybrany_sedzia = st.selectbox("Wybierz sedziego ", sedziowie)
+        st.dataframe(df_ligi[(df_ligi['Sedzia'] == wybrany_sedzia)], hide_index=True,
+                     column_order=['Gospodarz', 'Gosc', 'Zolte Gospo', 'Zolte Gosc'], width=500)
 
 def pokaz_srednie_strzalow(df_ligi):
     df_ligi_strzały_gospo = df_ligi.groupby('Gospodarz').agg(
-        Strzały_wykonane=('Strzaly Gospo', 'mean'),
-        Strzały_przeciwnika=('Strzaly Gosc', 'mean')
+        Wykonane=('Strzaly Gospo', 'mean'),
+        Przeciwnika=('Strzaly Gosc', 'mean')
     ).reset_index().round(1)
+    df_ligi_strzały_gospo["Meczowe"] = df_ligi_strzały_gospo["Wykonane"] + df_ligi_strzały_gospo["Przeciwnika"]
 
     df_ligi_strzały_gosc = df_ligi.groupby('Gosc').agg(
-        Strzały_wykonane=('Strzaly Gosc', 'mean'),
-        Strzały_przeciwnika=('Strzaly Gospo', 'mean')
+        Wykonane=('Strzaly Gosc', 'mean'),
+        Przeciwnika=('Strzaly Gospo', 'mean')
     ).reset_index().round(1)
+    df_ligi_strzały_gosc["Meczowe"] = df_ligi_strzały_gosc["Wykonane"] + df_ligi_strzały_gosc["Przeciwnika"]
 
+    wysokosc = (len(df_ligi_strzały_gospo) * 35) + 40
     st.subheader("Średnie strzałów")
-
     b1, b2 = st.columns(2)
     with b1:
-        st.dataframe(df_ligi_strzały_gospo, hide_index=True, width=500, height=600)
+        st.dataframe(df_ligi_strzały_gospo, hide_index=True, width=500, height=wysokosc)
     with b2:
-        st.dataframe(df_ligi_strzały_gosc, hide_index=True, width=500, height=600)
+        st.dataframe(df_ligi_strzały_gosc, hide_index=True, width=500, height=wysokosc)
+
 
 def pokaz_srednie_roznych(df_ligi):
     df_ligi_rożne_gospo = df_ligi.groupby('Gospodarz').agg(
-        Rożne_wykonane=('Rożne Gospo', 'mean'),
-        Rożne_przeciwnika=('Rożne Gosc', 'mean')
+        Wykonane=('Rozne Gospo', 'mean'),
+        Przeciwnika=('Rozne Gosc', 'mean')
     ).reset_index().round(1)
+    df_ligi_rożne_gospo["Meczowe"] = df_ligi_rożne_gospo["Wykonane"] + df_ligi_rożne_gospo["Przeciwnika"]
 
     df_ligi_rożne_gosc = df_ligi.groupby('Gosc').agg(
-        Rożne_wykonane=('Rożne Gosc', 'mean'),
-        Rożne_przeciwnika=('Rożne Gospo', 'mean')
+        Wykonane=('Rozne Gosc', 'mean'),
+        Przeciwnika=('Rozne Gospo', 'mean')
     ).reset_index().round(1)
+    df_ligi_rożne_gosc["Meczowe"] = df_ligi_rożne_gosc["Wykonane"] + df_ligi_rożne_gosc["Przeciwnika"]
 
+    wysokosc = (len(df_ligi_rożne_gospo) * 35) + 40
     st.subheader("Średnie rzutów rożnych")
-
     sr1, sr2 = st.columns(2)
     with sr1:
-        st.dataframe(df_ligi_rożne_gospo, hide_index=True, width=500, height=600)
+        st.dataframe(df_ligi_rożne_gospo, hide_index=True, width=500, height=wysokosc)
     with sr2:
-        st.dataframe(df_ligi_rożne_gosc, hide_index=True, width=500, height=600)
+        st.dataframe(df_ligi_rożne_gosc, hide_index=True, width=500, height=wysokosc)
 
 
 def rysuj_wykres(df_dane, os_x, os_y, tytul, kolumna_koloru=None, wartosc_linii=None, nazwa_linii="linia"):
@@ -432,80 +498,213 @@ def rysuj_wykres(df_dane, os_x, os_y, tytul, kolumna_koloru=None, wartosc_linii=
     fig.update_traces(textfont_size=12, textangle=0, textposition="inside")
     st.plotly_chart(fig)
 
+konfig_stat = {
+        "Faule": {"kolumna": "Faule", "nazwa": "Faule"},
+        "Rzuty rożne": {"kolumna": "Rozne", "nazwa": "Rożne"},
+        "Strzały": {"kolumna": "Strzaly", "nazwa": "Strzały"},
+        "Żółte": {"kolumna": "Zolte", "nazwa": "Żółte"}
+    }
 
 with Szwedzka:
     liga_szwedzka = dane[dane["Rozgrywki"] == 'Allsvenskan']
-    st.subheader("Wszystkie mecze ligi szwedzkiej")
-    st.dataframe(liga_szwedzka, hide_index=True)
-
-    pokaz_srednie_sedziego(liga_szwedzka)
-    pokaz_srednie_fauli(liga_szwedzka)
-    pokaz_srednie_strzalow(liga_szwedzka)
-    pokaz_srednie_roznych(liga_szwedzka)
-
-    st.subheader("Mecze wybranej drużyny")
+    st.title("Wybierz statystykę do wyświetlenia")
+    stat = st.selectbox("Statystyka", ["Faule", "Rzuty rożne", "Strzały", "Żółte"], width=300, key="stat_szwedzka")
     liga_szwedzka_kluby = liga_szwedzka["Gospodarz"].unique()
     liga_szwedzka_klub = st.selectbox("Wybierz drużynę", liga_szwedzka_kluby, width=300)
     liga_szwedzka_gospo = liga_szwedzka[liga_szwedzka['Gospodarz'] == liga_szwedzka_klub]
     liga_szwedzka_gosc = liga_szwedzka[liga_szwedzka['Gosc'] == liga_szwedzka_klub]
 
-    srednia_gosp = liga_szwedzka['Faule Gospo'].mean()
-    srednia_gosc = liga_szwedzka['Faule Gosc'].mean()
-    rysuj_wykres(df_dane = liga_szwedzka_gospo, os_x = 'Gosc', os_y= 'Faule Gospo', tytul = 'Faule jako gospodarz', wartosc_linii=srednia_gosp, nazwa_linii='Średnia ligowa' )
-    rysuj_wykres(df_dane= liga_szwedzka_gosc, os_x='Gospodarz', os_y='Faule Gosc', tytul='Faule jako gosc', wartosc_linii=srednia_gosc, nazwa_linii='Średnia ligowa' )
-    rysuj_wykres(df_dane=liga_szwedzka_gospo, os_x='Gosc', os_y='Faule Gosc', tytul='Faule przeciwko jako gospodarz', wartosc_linii=srednia_gosc, nazwa_linii='Średnia ligowa')
-    rysuj_wykres(df_dane=liga_szwedzka_gosc, os_x='Gospodarz', os_y='Faule Gospo', tytul='Faule przeciwko jako gosc', wartosc_linii=srednia_gosc, nazwa_linii='Średnia ligowa')
+    if stat in konfig_stat:
+        kol = konfig_stat[stat]["kolumna"]
+        nazwa = konfig_stat[stat]["nazwa"]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        rysuj_wykres(df_dane=liga_szwedzka_gospo, os_x='Gosc', os_y=f'{kol} Gospo', tytul=f'{nazwa} jako gospodarz')
+        rysuj_wykres(df_dane=liga_szwedzka_gosc, os_x='Gospodarz', os_y=f'{kol} Gosc', tytul=f'{nazwa} jako gość')
+    with c2:
+        rysuj_wykres(df_dane=liga_szwedzka_gospo, os_x='Gosc', os_y=f'{kol} Gosc',
+                     tytul=f'{nazwa} przeciwnika jako gospodarz')
+        rysuj_wykres(df_dane=liga_szwedzka_gosc, os_x='Gospodarz', os_y=f'{kol} Gospo',
+                     tytul=f'{nazwa} przeciwnika jako gość')
+
+    if stat == "Faule":
+        pokaz_srednie_fauli(liga_szwedzka)
+        pokaz_faule_sedziego(liga_szwedzka)
+    elif stat == "Rzuty rożne":
+        pokaz_srednie_roznych(liga_szwedzka)
+    elif stat == "Strzały":
+        pokaz_srednie_strzalow(liga_szwedzka)
+    elif stat == "Żółte":
+        pokaz_srednie_kartek(liga_szwedzka)
+        pokaz_kartki_sedziego(liga_szwedzka)
+
 
 
 with Norweska:
     liga_norweska = dane[dane["Rozgrywki"] == 'Eliteserien']
-    st.subheader("Wszystkie mecze ligi norweskiej")
-    st.dataframe(liga_norweska, hide_index=True)
-
-    pokaz_srednie_sedziego(liga_norweska)
-    pokaz_srednie_fauli(liga_norweska)
-    pokaz_srednie_strzalow(liga_norweska)
-    pokaz_srednie_roznych(liga_norweska)
-
-    st.subheader("Mecze wybranej drużyny")
-    liga_norweska_kluby = liga_norweska["Gospodarz"].unique()
+    st.title("Wybierz statystykę do wyświetlenia")
+    stat = st.selectbox("Statystyka", ["Faule", "Rzuty rożne", "Strzały", "Żółte"], width=300, key="stat_norweska")
+    liga_norweska_kluby =  liga_norweska["Gospodarz"].unique()
     liga_norweska_klub = st.selectbox("Wybierz drużynę", liga_norweska_kluby, width=300)
-    liga_norweska_gospo = liga_norweska[liga_norweska['Gospodarz'] == liga_norweska_klub]
+    liga_norweska_gospo =  liga_norweska[ liga_norweska['Gospodarz'] == liga_norweska_klub]
     liga_norweska_gosc = liga_norweska[liga_norweska['Gosc'] == liga_norweska_klub]
 
-    srednia_gosp = liga_norweska['Faule Gospo'].mean()
-    srednia_gosc = liga_norweska['Faule Gosc'].mean()
-    rysuj_wykres(df_dane=liga_norweska_gospo, os_x='Gosc', os_y='Faule Gospo', tytul='Faule jako gospodarz', wartosc_linii=srednia_gosp, nazwa_linii='Średnia ligowa')
-    rysuj_wykres(df_dane=liga_norweska_gosc, os_x='Gospodarz', os_y='Faule Gosc', tytul='Faule jako gosc', wartosc_linii=srednia_gosc, nazwa_linii='Średnia ligowa')
-    rysuj_wykres(df_dane=liga_norweska_gospo, os_x='Gosc', os_y='Faule Gosc', tytul='Faule przeciwko jako gospodarz',wartosc_linii=srednia_gosc, nazwa_linii='Średnia ligowa')
-    rysuj_wykres(df_dane=liga_norweska_gosc, os_x='Gospodarz', os_y='Faule Gospo', tytul='Faule przeciwko jako gosc', wartosc_linii=srednia_gosc, nazwa_linii='Średnia ligowa')
+    if stat in konfig_stat:
+        kol = konfig_stat[stat]["kolumna"]
+        nazwa = konfig_stat[stat]["nazwa"]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        rysuj_wykres(df_dane=liga_norweska_gospo, os_x='Gosc', os_y=f'{kol} Gospo', tytul=f'{nazwa} jako gospodarz')
+        rysuj_wykres(df_dane=liga_norweska_gosc, os_x='Gospodarz', os_y=f'{kol} Gosc', tytul=f'{nazwa} jako gość')
+    with c2:
+        rysuj_wykres(df_dane=liga_norweska_gospo, os_x='Gosc', os_y=f'{kol} Gosc',
+                     tytul=f'{nazwa} przeciwnika jako gospodarz')
+        rysuj_wykres(df_dane=liga_norweska_gosc, os_x='Gospodarz', os_y=f'{kol} Gospo',
+                     tytul=f'{nazwa} przeciwnika jako gość')
+
+    if stat == "Faule":
+        pokaz_srednie_fauli(liga_norweska)
+        pokaz_faule_sedziego(liga_norweska)
+    elif stat == "Rzuty rożne":
+        pokaz_srednie_roznych(liga_norweska)
+    elif stat == "Strzały":
+        pokaz_srednie_strzalow(liga_norweska)
+    elif stat == "Żółte":
+        pokaz_srednie_kartek(liga_norweska)
+        pokaz_kartki_sedziego(liga_norweska)
+
 
 with Ekstraklasa2:
     Ekstraklasa = dane[dane["Rozgrywki"] == 'Ekstraklasa']
-    st.subheader("Wszystkie mecze ligi polskiej")
-    st.dataframe(Ekstraklasa, hide_index=True)
+    st.title("Wybierz statystykę do wyświetlenia")
+    stat = st.selectbox("Statystyka", ["Faule", "Rzuty rożne", "Strzały", "Żółte"], width=300)
+    Ekstraklasa_kluby = Ekstraklasa["Gospodarz"].unique()
+    Ekstraklasa_klub = st.selectbox("Wybierz drużynę", Ekstraklasa_kluby, width=300)
+    Ekstraklasa_gospo = Ekstraklasa[Ekstraklasa['Gospodarz'] == Ekstraklasa_klub]
+    Ekstraklasa_gosc = Ekstraklasa[Ekstraklasa['Gosc'] == Ekstraklasa_klub]
 
-    pokaz_srednie_sedziego(Ekstraklasa)
-    pokaz_srednie_fauli(Ekstraklasa)
-    pokaz_srednie_strzalow(Ekstraklasa)
-    pokaz_srednie_roznych(Ekstraklasa)
+    if stat in konfig_stat:
+        kol = konfig_stat[stat]["kolumna"]
+        nazwa = konfig_stat[stat]["nazwa"]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        rysuj_wykres(df_dane=Ekstraklasa_gospo, os_x='Gosc', os_y=f'{kol} Gospo', tytul=f'{nazwa} jako gospodarz')
+        rysuj_wykres(df_dane=Ekstraklasa_gosc, os_x='Gospodarz', os_y=f'{kol} Gosc', tytul=f'{nazwa} jako gość')
+    with c2:
+        rysuj_wykres(df_dane=Ekstraklasa_gospo, os_x='Gosc', os_y=f'{kol} Gosc',tytul=f'{nazwa} przeciwnika jako gospodarz')
+        rysuj_wykres(df_dane=Ekstraklasa_gosc, os_x='Gospodarz', os_y=f'{kol} Gospo', tytul=f'{nazwa} przeciwnika jako gość')
+
+    if stat == "Faule":
+        pokaz_srednie_fauli(Ekstraklasa)
+        pokaz_faule_sedziego(Ekstraklasa)
+    elif stat == "Rzuty rożne":
+        pokaz_srednie_roznych(Ekstraklasa)
+    elif stat == "Strzały":
+        pokaz_srednie_strzalow(Ekstraklasa)
+    elif stat == "Żółte":
+        pokaz_srednie_kartek(Ekstraklasa)
+        pokaz_kartki_sedziego(Ekstraklasa)
+
+
 
 with ILiga:
     pierwsza_liga = dane[dane["Rozgrywki"] == '1 Liga']
-    st.subheader("Wszystkie mecze 1 ligi polskiej")
-    st.dataframe(pierwsza_liga, hide_index=True)
+    st.title("Wybierz statystykę do wyświetlenia")
+    stat = st.selectbox("Statystyka", ["Faule", "Rzuty rożne", "Żółte"], width=300)
+    pierwsza_liga_kluby = pierwsza_liga["Gospodarz"].unique()
+    pierwsza_liga_klub = st.selectbox("Wybierz drużynę", pierwsza_liga_kluby, width=300)
+    pierwsza_liga_gospo = pierwsza_liga[pierwsza_liga['Gospodarz'] == pierwsza_liga_klub]
+    pierwsza_liga_gosc = pierwsza_liga[pierwsza_liga['Gosc'] == pierwsza_liga_klub]
 
-    pokaz_srednie_sedziego(pierwsza_liga)
-    pokaz_srednie_fauli(pierwsza_liga)
-    pokaz_srednie_strzalow(pierwsza_liga)
-    pokaz_srednie_roznych(pierwsza_liga)
+    if stat in konfig_stat:
+        kol = konfig_stat[stat]["kolumna"]
+        nazwa = konfig_stat[stat]["nazwa"]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        rysuj_wykres(df_dane=pierwsza_liga_gospo, os_x='Gosc', os_y=f'{kol} Gospo', tytul=f'{nazwa} jako gospodarz')
+        rysuj_wykres(df_dane=pierwsza_liga_gosc, os_x='Gospodarz', os_y=f'{kol} Gosc', tytul=f'{nazwa} jako gość')
+    with c2:
+         rysuj_wykres(df_dane=pierwsza_liga_gospo, os_x='Gosc', os_y=f'{kol} Gosc', tytul=f'{nazwa} przeciwnika jako gospodarz')
+         rysuj_wykres(df_dane=pierwsza_liga_gosc, os_x='Gospodarz', os_y=f'{kol} Gospo',tytul=f'{nazwa} przeciwnika jako gość')
+
+    if stat == "Faule":
+        pokaz_srednie_fauli(pierwsza_liga)
+        pokaz_faule_sedziego(pierwsza_liga)
+    elif stat == "Rzuty rożne":
+        pokaz_srednie_roznych(pierwsza_liga)
+    elif stat == "Żółte":
+        pokaz_srednie_kartek(pierwsza_liga)
+        pokaz_kartki_sedziego(pierwsza_liga)
+
 
 with Czeska:
     liga_czeska = dane[dane["Rozgrywki"] == 'Chance Liga']
-    st.subheader("Wszystkie mecze ligi czeskiej")
-    st.dataframe(liga_czeska, hide_index=True)
+    st.title("Wybierz statystykę do wyświetlenia")
+    stat = st.selectbox("Statystyka", ["Faule", "Rzuty rożne", "Strzały", "Żółte"], width=300, key="stat_czeska")
+    liga_czeska_kluby = liga_czeska["Gospodarz"].unique()
+    liga_czeska_klub = st.selectbox("Wybierz drużynę", liga_czeska_kluby, width=300)
+    liga_czeska_gospo = liga_czeska[liga_czeska['Gospodarz'] == liga_czeska_klub]
+    liga_czeska_gosc = liga_czeska[liga_czeska['Gosc'] == liga_czeska_klub]
 
-    pokaz_srednie_sedziego(liga_czeska)
-    pokaz_srednie_fauli(liga_czeska)
-    pokaz_srednie_strzalow(liga_czeska)
-    pokaz_srednie_roznych(liga_czeska)
+    if stat in konfig_stat:
+        kol = konfig_stat[stat]["kolumna"]
+        nazwa = konfig_stat[stat]["nazwa"]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        rysuj_wykres(df_dane=liga_czeska_gospo, os_x='Gosc', os_y=f'{kol} Gospo', tytul=f'{nazwa} jako gospodarz')
+        rysuj_wykres(df_dane=liga_czeska_gosc, os_x='Gospodarz', os_y=f'{kol} Gosc', tytul=f'{nazwa} jako gość')
+    with c2:
+        rysuj_wykres(df_dane=liga_czeska_gospo, os_x='Gosc', os_y=f'{kol} Gosc',
+                     tytul=f'{nazwa} przeciwnika jako gospodarz')
+        rysuj_wykres(df_dane=liga_czeska_gosc, os_x='Gospodarz', os_y=f'{kol} Gospo',
+                     tytul=f'{nazwa} przeciwnika jako gość')
+
+    if stat == "Faule":
+        pokaz_srednie_fauli(liga_czeska)
+        pokaz_faule_sedziego(liga_czeska)
+    elif stat == "Rzuty rożne":
+        pokaz_srednie_roznych(liga_czeska)
+    elif stat == "Strzały":
+        pokaz_srednie_strzalow(liga_czeska)
+    elif stat == "Żółte":
+        pokaz_srednie_kartek(liga_czeska)
+        pokaz_kartki_sedziego(liga_czeska)
+
+with Duńska:
+    liga_dunska = dane[dane["Rozgrywki"] == 'Superliga']
+    st.title("Wybierz statystykę do wyświetlenia")
+    stat = st.selectbox("Statystyka", ["Faule", "Rzuty rożne", "Strzały", "Żółte"], width=300, key="stat_dunska")
+    liga_dunska_kluby = liga_dunska["Gospodarz"].unique()
+    liga_dunska_klub = st.selectbox("Wybierz drużynę", liga_dunska_kluby, width=300)
+    liga_dunska_gospo = liga_dunska[liga_dunska['Gospodarz'] == liga_dunska_klub]
+    liga_dunska_gosc = liga_dunska[liga_dunska['Gosc'] == liga_dunska_klub]
+
+    if stat in konfig_stat:
+        kol = konfig_stat[stat]["kolumna"]
+        nazwa = konfig_stat[stat]["nazwa"]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        rysuj_wykres(df_dane=liga_dunska_gospo, os_x='Gosc', os_y=f'{kol} Gospo', tytul=f'{nazwa} jako gospodarz')
+        rysuj_wykres(df_dane=liga_dunska_gosc, os_x='Gospodarz', os_y=f'{kol} Gosc', tytul=f'{nazwa} jako gość')
+    with c2:
+        rysuj_wykres(df_dane=liga_dunska_gospo, os_x='Gosc', os_y=f'{kol} Gosc',
+                     tytul=f'{nazwa} przeciwnika jako gospodarz')
+        rysuj_wykres(df_dane=liga_dunska_gosc, os_x='Gospodarz', os_y=f'{kol} Gospo',
+                     tytul=f'{nazwa} przeciwnika jako gość')
+
+    if stat == "Faule":
+        pokaz_srednie_fauli(liga_dunska)
+        pokaz_faule_sedziego(liga_dunska)
+    elif stat == "Rzuty rożne":
+        pokaz_srednie_roznych(liga_dunska)
+    elif stat == "Strzały":
+        pokaz_srednie_strzalow(liga_dunska)
+    elif stat == "Żółte":
+        pokaz_srednie_kartek(liga_dunska)
+        pokaz_kartki_sedziego(liga_dunska)
