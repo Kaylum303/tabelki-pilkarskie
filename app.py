@@ -61,8 +61,8 @@ df1.columns = df2.columns = ['Drużyna', 'Gole strzelone', 'Gole stracone', 'Str
 dfciek = pd.concat([df1, df2], ignore_index=True)
 dfsrednie = dfciek.groupby('Drużyna').mean().round(2).reset_index()
 
-Ekstraklasa2, ILiga, Czeska, Norweska, Szwedzka, Duńska, Mundial, Ekstraklasa1 = st.tabs(
-    ["🇵🇱 Ekstraklasa 2026/2027", "🇵🇱 Betclic 1 Liga 2026/2027", "🇨🇿 Chance Liga 2026/2027", "🇳🇴 Elitenserien 2026",
+Ekstraklasa2, ILiga, Konferencja, Czeska, Norweska, Szwedzka, Duńska, Mundial, Ekstraklasa1 = st.tabs(
+    ["🇵🇱 Ekstraklasa 2026/2027", "🇵🇱 Betclic 1 Liga 2026/2027", "Liga Konferencji 2026/2027", "🇨🇿 Chance Liga 2026/2027", "🇳🇴 Elitenserien 2026",
      "🇸🇪 Allsvenskan 2026", "🇩🇰 Superliga 2026/2027", "Mistrzostwa Świata 2026", "Ekstraklasa 25/26"])
 
 with Mundial:
@@ -186,37 +186,15 @@ with Mundial:
                  dfd2["Spalone przeciwnika"].mean().round(2))
 
 with Ekstraklasa1:
-    st.subheader("Statystyki drużyn ekstraklasy")
-    dfekstrah = dfekstra[['Gospodarz', 'Faule gospodarz', 'Faule gosc', 'Meczowe']].copy()
-    dfekstrah = dfekstrah.rename(columns={
-        'Gospodarz': 'Drużyna',
-        'Faule gospodarz': 'Faule zrobione',
-        'Faule gosc': 'Faule wywalczone'
-    })
-
-    dfekstraa = dfekstra[['Gosc', 'Faule gosc', 'Faule gospodarz', 'Meczowe']].copy()
-    dfekstraa = dfekstrah.rename(columns={
-        'Gosc': 'Drużyna',
-        'Faule gosc': 'Faule zrobione',
-        'Faule gospodarz': 'Faule wywalczone'
-    })
-    dfekstraw = pd.concat([dfekstrah, dfekstraa], ignore_index=True)
-    dfekstrap = dfekstraw.groupby('Drużyna').agg({
-        'Faule zrobione': 'mean',
-        'Faule wywalczone': 'mean',
-        'Meczowe': 'mean'
-    }).reset_index().round(1)
+    st.title("Statystyka fauli drużyn ekstraklasy")
 
     dfekstras = dfekstra.groupby('Sędzia').agg(
         Meczów=('Sędzia', 'count'),
         średnia=('Meczowe', 'mean')
     ).reset_index().round(1)
 
-    a1, a2 = st.columns(2)
-    with a1:
-        st.dataframe(dfekstrap, hide_index=True, width=500)
-    with a2:
-        st.dataframe(dfekstras, hide_index=True, width=500)
+    st.subheader("Statystyki sędziów")
+    st.dataframe(dfekstras, hide_index=True, width=500)
 
     st.subheader("Wszystkie mecze ekstraklasy wybranej drużyny")
     lista_kluby = dfekstra["Gospodarz"].unique()
@@ -504,6 +482,40 @@ konfig_stat = {
         "Strzały": {"kolumna": "Strzaly", "nazwa": "Strzały"},
         "Żółte": {"kolumna": "Zolte", "nazwa": "Żółte"}
     }
+
+with Konferencja:
+    liga_konferencji = dane[dane["Rozgrywki"] == 'Liga konferencji']
+    st.title("Wybierz statystykę do wyświetlenia")
+    stat = st.selectbox("Statystyka", ["Faule", "Rzuty rożne", "Strzały", "Żółte"], width=300, key="stat_konferencja")
+    liga_konferencji_kluby = liga_konferencji["Gospodarz"].unique()
+    liga_konferencji_klub = st.selectbox("Wybierz drużynę", liga_konferencji_kluby, width=300)
+    liga_konferencji_gospo = liga_konferencji[liga_konferencji['Gospodarz'] == liga_konferencji_klub]
+    liga_konferencji_gosc = liga_konferencji[liga_konferencji['Gosc'] == liga_konferencji_klub]
+
+    if stat in konfig_stat:
+        kol = konfig_stat[stat]["kolumna"]
+        nazwa = konfig_stat[stat]["nazwa"]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        rysuj_wykres(df_dane=liga_konferencji_gospo, os_x='Gosc', os_y=f'{kol} Gospo', tytul=f'{nazwa} jako gospodarz')
+        rysuj_wykres(df_dane=liga_konferencji_gosc, os_x='Gospodarz', os_y=f'{kol} Gosc', tytul=f'{nazwa} jako gość')
+    with c2:
+        rysuj_wykres(df_dane=liga_konferencji_gospo, os_x='Gosc', os_y=f'{kol} Gosc',
+                     tytul=f'{nazwa} przeciwnika jako gospodarz')
+        rysuj_wykres(df_dane=liga_konferencji_gosc, os_x='Gospodarz', os_y=f'{kol} Gospo',
+                     tytul=f'{nazwa} przeciwnika jako gość')
+
+    if stat == "Faule":
+        pokaz_srednie_fauli(liga_konferencji)
+        pokaz_faule_sedziego(liga_konferencji)
+    elif stat == "Rzuty rożne":
+        pokaz_srednie_roznych(liga_konferencji)
+    elif stat == "Strzały":
+        pokaz_srednie_strzalow(liga_konferencji)
+    elif stat == "Żółte":
+        pokaz_srednie_kartek(liga_konferencji)
+        pokaz_kartki_sedziego(liga_konferencji)
 
 with Szwedzka:
     liga_szwedzka = dane[dane["Rozgrywki"] == 'Allsvenskan']
